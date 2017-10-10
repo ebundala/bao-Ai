@@ -151,7 +151,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 961,
+      "width": 960,
       "height": 480
     },
     "_rotationX": 0,
@@ -196,7 +196,9 @@
     "pattern": {
       "__uuid__": "d60d8952-1d6e-434d-b81a-2ce5edf03d4f"
     },
-    "mbao": null,
+    "mbao": {
+      "__uuid__": "8112f2e2-50e8-456a-843c-c054bd9e8e53"
+    },
     "nyumba": {
       "__uuid__": "ea284ef1-adea-4ef9-866e-5414f479b456"
     },

@@ -2,19 +2,9 @@ cc.Class({
     extends: cc.Component,
 
     properties:{
-        // foo: {
-        //    default: null,      // The default value will be used only when the component attaching
-        //                           to a node for the first time
-        //    url: cc.Texture2D,  // optional, default is typeof default
-        //    serializable: true, // optional, default is true
-        //    visible: true,      // optional, default is true
-        //    displayName: 'Foo', // optional
-        //    readonly: false,    // optional, default is false
-        // },
-        // ...
 
 
-        canvas: {
+      canvas: {
              default: null,
              type: cc.Canvas
          },
@@ -22,6 +12,7 @@ cc.Class({
          default: null,
          type:cc.Node
        },
+       holeslist:[Array],
 
        kete:{
          default: null,
@@ -53,70 +44,152 @@ cc.Class({
        hand:{
          default: null,
          type:cc.Prefab
-       }
+       },
 
 
     },
 
     // use this for initialization
     onLoad: function () {
+  this.holeslist=[new Array(8),new Array(8),new Array(8),new Array(8),new Array(8)];
 
-
-  let i=8,j=4,k=0,l=0;
+  let i=8,j=4,y=0,x=0;
   let dy=(this.root.height-160)/j;
   let dx=(this.root.width-320)/i;
   let offset_x=160,offset_y=80;
   let mbao =this.insertPrefab(this.mbao);
   mbao.setPosition(cc.p(offset_x,offset_y));
 
-  for(k=0;k<j;k++){
-   for(l=0;l<i;l++)
+
+//create the playing board
+  for(y=0;y<j;y++){
+   for(x=0;x<i;x++)
    {
+     let row=[];
      let store;
      let pattern;
-     if(l===0&&k===0){
+     if(x===0&&y===0){
       store=this.insertPrefab(this.store);
       store.position=cc.p(offset_x-80,offset_y);
       pattern=this.insertPrefab(this.pattern);
       pattern.setPosition(cc.p(offset_x-dx,offset_y+2*dy));
-
+      this.holeslist[4][0]=store;//south store hole
      }
-     else if (l===7&&k===3) {
+     else if (x===7&&y===3) {
        store=this.insertPrefab(this.store);
-
-      // store.setAnchorPoint(cc.p(1,1));
-       //store.setRotation(180);
-       store.setPosition(cc.p(offset_x+l*dx+dx,offset_y+k*dy-dy));
-
+       store.setPosition(cc.p(offset_x+x*dx+dx,offset_y+y*dy-dy));
        pattern=this.insertPrefab(this.pattern);
-       pattern.setPosition(cc.p(offset_x+l*dx+dx,offset_y))
+       pattern.setPosition(cc.p(offset_x+x*dx+dx,offset_y))
+       this.holeslist[4][1]=store;//north store hole
 
      }
 
      let hole;
-     if(l===3&&k===2||l===4&&k===1){
+     if(x===3&&y===2||x===4&&y===1){
         hole = this.insertPrefab(this.nyumba);
      }else {
          hole = this.insertPrefab(this.hole);
      }
 
-
-      //if(k>1) {
-      // var hole = this.insertPrefab(this.hole);
-      //  hole.setRotation(180);
-    //    hole.setPosition(cc.p(offset_x+l*dx+dx,offset_y+k*dy+dy));
-    // }else{
-    //var hole = this.insertPrefab(this.hole);
-     hole.setPosition(cc.p(offset_x+l*dx,offset_y+k*dy));
-   //}
+     hole.setPosition(cc.p(offset_x+x*dx,offset_y+y*dy));
+     this.setHolePos(hole,{x,y});
+     this.holeslist[y][x]=hole;
 
    }
 
   }
 
+// populate initial state of the board
 
+    //normal holes
+     this.getHole(2,1).addKete(2);
+     this.getHole(3,1).addKete(2);
+     this.getHole(4,2).addKete(2);
+     this.getHole(5,2).addKete(2);
+    //nyumba holes
+    this.getHole(4,1).addKete(6);
+    this.getHole(4,1).setHoleName("south-nyumba");
+    this.getHole(3,2).addKete(6);
+    this.getHole(3,2).setHoleName("north-nyumba");
+
+    //stores holes;
+    this.getHole(0,4).addKete(22);
+    this.getHole(0,4).setHoleName("south-store");
+    this.getHole(1,4).addKete(22);
+    this.getHole(1,4).setHoleName("north-store");
+    },
+  getHole(x,y){
+  return this.getHoleComponent(this.holeslist[y][x]);
+   },
+
+    getHoleComponent(hole){
+    return  hole.getComponent("boardNode");
+   },
+
+    addKete(hole,i){
+      hole.getComponent("boardNode").addKete(i);
+    },
+    removeKete(hole,i){
+      hole.getComponent("boardNode").addKete(i);
+    },
+    getHoleValue(hole){
+      return hole.getComponent("boardNode").value;
+    },
+    getHoleType(hole){
+        return hole.getComponent("boardNode").bName;
+    },
+    getHoleX(hole){
+        return hole.getComponent("boardNode").nodeY;
+    },
+     getHoleY(hole){
+        return hole.getComponent("boardNode").nodeY;
+    },
+    getHolePos(hole){
+      let holeNode= hole.getComponent("boardNode");
+      return {y:holeNode.nodeY,x:holeNode.nodeX,};
 
     },
+    getHoleInfo(hole) {
+    let holeNode= hole.getComponent("boardNode");
+    return { value:holeNode.value,
+      x:holeNode.nodeX,
+      y:holeNode.nodeY,
+      name:holeNode.bName
+    };
+
+    }
+  ,
+  setHoleName(hole,name){
+    hole.getComponent("boardNode").bName=name;
+ },
+    setHoleValue(hole,value){
+      return hole.getComponent("boardNode").setHoleValue=value;
+    },
+    setHoleType(hole,name){
+        hole.getComponent("boardNode").setHoleName(name);
+    },
+    setHoleX(hole,x){
+        hole.getComponent("boardNode").nodeX=x;
+    },
+     setHoleY(hole,y){
+       hole.getComponent("boardNode").nodeY=y;
+    },
+    setHolePos(hole,info){
+      let holeNode= hole.getComponent("boardNode");
+      holeNode.setHolePos(info.x,info.y)
+
+    },
+    setHoleInfo(hole,info){
+    let holeNode= hole.getComponent("boardNode");
+
+      holeNode.setHoleY(info.x);
+      holeNode.setHoleY(info.y);
+      holeNode.setHoleName(info.name);
+      holeNode.setHoleValue(info.value);
+
+    },
+
+
     insertPrefab(prefab){
       var node = cc.instantiate(prefab);
       node.parent = this.root;

@@ -44,19 +44,31 @@ cc.Class({
       let kete= this.insertPrefab(this.kete);
       kete.position= this.getRandomPosition();
       this.keteList.push(kete);
+      this.value++;
       }
     },
     removeKete(i){
       for (var j = 0; j < i; j++) {
       this.keteList.pop().removeFromParent(true);
+      this.value--;
     }
+    },
+    setHoleName(name){
+      this.bName=name;
+    },
+    setHoleValue(value){
+      this.value=value;
+    },
+    setHolePos(x,y){
+      this.nodeY=y;
+      this.nodeX=x;
     },
 
 
     // called every frame, uncomment this function to activate update callback
      update: function (dt) {
 
-
+  this.label.string=this.value;
 
      },
 });
