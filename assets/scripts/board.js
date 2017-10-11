@@ -12,17 +12,16 @@ cc.Class({
          default: null,
          type:cc.Node
        },
-      
        info:{
          default:null,
          type:cc.Label
        },
        holeslist:[Array],
 
-       kete:{
-         default: null,
-         type:cc.Prefab
-       },
+      //  kete:{
+      //    default: null,
+      //    type:cc.Prefab
+      //  },
 
        hole:{
          default: null,
@@ -53,7 +52,8 @@ cc.Class({
        activeHole:{
          default:null,
          type:cc.Node
-       }
+       },
+       turn:0
 
 
 

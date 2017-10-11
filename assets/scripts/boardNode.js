@@ -7,6 +7,10 @@ cc.Class({
         default:null,
         type:cc.Node
       },
+      hightlight:{
+        default:null,
+        type:cc.Sprite
+      },
       kete:{
         default:null,
         type:cc.Prefab
