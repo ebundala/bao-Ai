@@ -44,7 +44,8 @@ cc.Class({
        hand:{
          default: null,
          type:cc.Prefab
-       },
+       }
+
 
 
     },
@@ -52,7 +53,7 @@ cc.Class({
     // use this for initialization
     onLoad: function () {
   this.holeslist=[new Array(8),new Array(8),new Array(8),new Array(8),new Array(8)];
-
+  this.hands={south:0,north:0,turn:0};
   let i=8,j=4,y=0,x=0;
   let dy=(this.root.height-160)/j;
   let dx=(this.root.width-320)/i;
@@ -102,29 +103,111 @@ cc.Class({
 // populate initial state of the board
 
     //normal holes
-     this.getHole(2,1).addKete(2);
-     this.getHole(3,1).addKete(2);
-     this.getHole(4,2).addKete(2);
-     this.getHole(5,2).addKete(2);
+    // this.getHole(2,1).addKete(2);
+    // this.getHole(3,1).addKete(2);
+    // this.getHole(4,2).addKete(2);
+     //this.getHole(5,2).addKete(2);
     //nyumba holes
-    this.getHole(4,1).addKete(6);
-    this.getHole(4,1).setHoleName("south-nyumba");
-    this.getHole(3,2).addKete(6);
-    this.getHole(3,2).setHoleName("north-nyumba");
+  //  this.getHole(4,1).addKete(6);
+    //this.getHole(4,1).setHoleName("south-nyumba");
+  //  this.getHole(3,2).addKete(6);
+  //  this.getHole(3,2).setHoleName("north-nyumba");
 
     //stores holes;
     this.getHole(0,4).addKete(22);
     this.getHole(0,4).setHoleName("south-store");
     this.getHole(1,4).addKete(22);
     this.getHole(1,4).setHoleName("north-store");
+
+
+    //kimbi and kichwa
+      this.getHole(0,1).setHoleName("kichwa-l");
+      this.getHole(0,2).setHoleName("kichwa-l");
+      this.getHole(7,1).setHoleName("kichwa-r");
+      this.getHole(7,2).setHoleName("kichwa-r");
+
+      this.getHole(1,1).setHoleName("kimbi-l");
+      this.getHole(1,2).setHoleName("kimbi-l");
+      this.getHole(6,1).setHoleName("kimbi-r");
+      this.getHole(6,2).setHoleName("kimbi-r");
+
+      this.sow(19,this.getHole(7,2),"right","north");
+
     },
-  getHole(x,y){
-  return this.getHoleComponent(this.holeslist[y][x]);
-   },
+    sow(kete,startHole,direction,player){
+      //let hole =this.getHoleComponent(startHole);
+      let holePos=this.getHolePos(startHole);
+    //  let condition;
+
+         while(kete>0){
+
+
+               if(player==="south")
+              {
+                if (direction==="left")
+                 {
+                   if(holePos.x===0){
+                     holePos.y>0?holePos.y--:holePos.y++;
+                     direction="right";
+                   }else{
+                  holePos.x--;
+                }
+
+              }else { //right direction
+                  if(holePos.x===7){
+                    direction="left";
+                    holePos.y>0?holePos.y--:holePos.y++;
+                  }else{
+                    holePos.x++;
+                  }
+
+                }
+                }
+                else //north player logic
+                {
+
+                  if (direction==="left")
+                   {
+                     if(holePos.x===7){
+                      holePos.y>2?holePos.y--:holePos.y++;
+                       direction="right";
+                     }else{
+                    holePos.x++;
+                  }
+
+                }else { //right direction
+                    if(holePos.x===0){
+                      direction="left";
+                      holePos.y>2?holePos.y--:holePos.y++;
+                    }else{
+                      holePos.x--;
+                    }
+
+                  }
+
+                }
+
+
+
+                if(kete===0){
+                  break;
+                }else{
+                  kete--;
+                }
+                console.log(direction+" x y ",holePos.x+" ",holePos.y);
+                this.getHole(holePos.x,holePos.y).addKete(1);
+
+         }
+    },
+
+
+    getHole(x,y){
+     return this.getHoleComponent(this.holeslist[y][x]);
+    },
 
     getHoleComponent(hole){
     return  hole.getComponent("boardNode");
-   },
+    },
 
     addKete(hole,i){
       hole.getComponent("boardNode").addKete(i);
@@ -159,9 +242,9 @@ cc.Class({
 
     }
   ,
-  setHoleName(hole,name){
+     setHoleName(hole,name){
     hole.getComponent("boardNode").bName=name;
- },
+    },
     setHoleValue(hole,value){
       return hole.getComponent("boardNode").setHoleValue=value;
     },
