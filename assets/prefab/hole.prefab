@@ -353,7 +353,9 @@
     "root": {
       "__id__": 8
     },
-    "hightlight": null,
+    "hightlight": {
+      "__id__": 6
+    },
     "kete": {
       "__uuid__": "c64244d6-fa5b-4d79-95c2-c14c8778370f"
     },

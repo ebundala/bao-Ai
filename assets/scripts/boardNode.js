@@ -10,6 +10,7 @@ cc.Class({
       hightlight:{
         default:null,
         type:cc.Sprite
+
       },
       kete:{
         default:null,
@@ -36,9 +37,26 @@ cc.Class({
     getRandomPosition: function() {
           return cc.p(cc.randomMinus1To1() * this.root.width/2, cc.randomMinus1To1() * this.root.height/2);
       },
+
+      showHightlight(){
+        this.hightlight.node.active=true;
+        return this;
+      },
+      hideHighlight(){
+        this.hightlight.node.active=false;
+        return this;
+      },
+      highlightBlink(t){
+        this.showHightlight();
+        this.scheduleOnce(this.hideHighlight.bind(this),t)
+        return this;
+      },
     // use this for initialization
     onLoad: function () {
       this.label.string=this.value;
+      this.hideHighlight();
+
+
     //  this.addKete(this.value);
     // var self=this;
     // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
@@ -66,23 +84,30 @@ cc.Class({
       kete.position= this.getRandomPosition();
       this.keteList.push(kete);
       this.value++;
+
       }
+      return this;
     },
     removeKete(i){
       for (var j = 0; j < i; j++) {
       this.keteList.pop().removeFromParent(true);
       this.value--;
+
     }
+    return this;
     },
     setHoleName(name){
       this.bName=name;
+      return this;
     },
     setHoleValue(value){
       this.value=value;
+      return this;
     },
     setHolePos(x,y){
       this.nodeY=y;
       this.nodeX=x;
+      return this;
     },
 
 

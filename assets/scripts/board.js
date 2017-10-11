@@ -109,16 +109,14 @@ cc.Class({
      {
         // var touches = event.getTouches();
          //var touchLoc = touches[0].getLocation();
-         //console.log();
-         //this.addKete(5);
-         let node =event.target;//.getComponent("boardNode");
-         this.activeHole=node;
-         //this.addKete(node,5);
-         //let value=this.getHoleValue(node);
-         //this.removeKete(node,value);
-         //this.sow(value,this.getHoleComponent(node),"left","south");
+         let node =event.target;
+         this.removeActiveHole();
+         this.setActiveHole(node)
 
-         //console.log(value);
+         let value=this.getHoleValue(this.getActiveHole());
+
+
+         console.log(value);
 
      }, this);
 
@@ -128,39 +126,13 @@ cc.Class({
 
   }
 
-// populate initial state of the board
-
-    //normal holes
-     this.getHole(2,1).addKete(2);
-    this.getHole(3,1).addKete(2);
-     this.getHole(4,2).addKete(2);
-     this.getHole(5,2).addKete(2);
-    //nyumba holes
-   this.getHole(4,1).addKete(6);
-    this.getHole(4,1).setHoleName("south-nyumba");
-    this.getHole(3,2).addKete(6);
-    this.getHole(3,2).setHoleName("north-nyumba");
-
-    //stores holes;
-    this.getHole(0,4).addKete(22);
-    this.getHole(0,4).setHoleName("south-store");
-    this.getHole(1,4).addKete(22);
-    this.getHole(1,4).setHoleName("north-store");
+   this.addTouchToStores().initBoardState();
 
 
-    //kimbi and kichwa
-      this.getHole(0,1).setHoleName("kichwa-l");
-      this.getHole(0,2).setHoleName("kichwa-l");
-      this.getHole(7,1).setHoleName("kichwa-r");
-      this.getHole(7,2).setHoleName("kichwa-r");
 
-      this.getHole(1,1).setHoleName("kimbi-l");
-      this.getHole(1,2).setHoleName("kimbi-l");
-      this.getHole(6,1).setHoleName("kimbi-r");
-      this.getHole(6,2).setHoleName("kimbi-r");
-
-      //this.sow(19,this.getHole(7,2),"right","north");
-
+      // this.scheduleOnce(function () {
+      //   this.sow(19,this.getHole(7,2),"right","north")
+      // }.bind(this),5);
 
       // var self=this;
       // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
@@ -183,6 +155,39 @@ cc.Class({
 
 
     },
+    addTouchToStores(){
+      this.getRawHole(0,4).on(cc.Node.EventType.TOUCH_END, function (event)
+      {
+         // var touches = event.getTouches();
+          //var touchLoc = touches[0].getLocation();
+          //console.log();
+          //this.addKete(5);
+
+          let node =event.target;//.getComponent("boardNode");
+          this.removeActiveHole();
+          this.setActiveHole(node)
+          //this.addKete(node,5);
+          let value=this.getHoleValue(this.getActiveHole());
+          //this.removeKete(node,value);
+          //this.sow(value,this.getHoleComponent(node),"left","south");
+
+          console.log(value);
+
+      }, this);
+
+       this.getRawHole(1,4).on(cc.Node.EventType.TOUCH_END, function (event)
+       {
+          // var touches = event.getTouches();
+           //var touchLoc = touches[0].getLocation();
+           let node =event.target;
+           this.removeActiveHole();
+           this.setActiveHole(node)
+           let value=this.getHoleValue(this.getActiveHole());
+           console.log(value);
+       }, this);
+       return this;
+    },
+
     sow(kete,startHole,direction,player){
       let holePos=this.getHolePos(startHole);
          while(kete>0){
@@ -241,26 +246,57 @@ cc.Class({
                   kete--;
                 }
                 //console.log(direction+" x y ",holePos.x+" ",holePos.y);
-                this.getHole(holePos.x,holePos.y).addKete(1);
+                this.getHole(holePos.x,holePos.y).addKete(1)//.highlightBlink(0.1);
 
          }
          return holePos;
+    },
+    setActiveHole(hole){
+      if(hole)//Todo check if instance of hole
+      {
+      this.activeHole=hole;
+      let node=this.getHoleComponent(hole)
+      node.showHightlight();
+      return node;
+    }
+      return null;
+    },
+    removeActiveHole(){
+      if(this.activeHole)//check if instance of a hole
+      {
+      let node=this.getHoleComponent(this.activeHole)
+      node.hideHighlight();
+      return node;
+    }
+      this.activeHole=null;
+      return null;
+    },
+    getActiveHole(){
+      return this.activeHole;
     },
 
 
     getHole(x,y){
      return this.getHoleComponent(this.holeslist[y][x]);
     },
+    getRawHole(x,y){
+      return this.holeslist[y][x];
+    },
 
-    getHoleComponent(hole){
+    getHoleComponent(hole)
+    {
     return  hole.getComponent("boardNode");
     },
 
     addKete(hole,i){
-      hole.getComponent("boardNode").addKete(i);
+      let node=  hole.getComponent("boardNode");
+      node.addKete(i);
+      return node;
     },
     removeKete(hole,i){
-      hole.getComponent("boardNode").removeKete(i);
+      let node=hole.getComponent("boardNode")
+      node.removeKete(i);
+      return node
     },
     getHoleValue(hole){
       return hole.getComponent("boardNode").value;
@@ -271,7 +307,7 @@ cc.Class({
     getHoleX(hole){
         return hole.getComponent("boardNode").nodeY;
     },
-     getHoleY(hole){
+    getHoleY(hole){
         return hole.getComponent("boardNode").nodeY;
     },
     getHolePos(hole){
@@ -290,23 +326,34 @@ cc.Class({
     }
   ,
      setHoleName(hole,name){
-    hole.getComponent("boardNode").bName=name;
+       let node=hole.getComponent("boardNode");
+       node.bName=name;
+       return node;
     },
     setHoleValue(hole,value){
-      return hole.getComponent("boardNode").setHoleValue=value;
+      let node= hole.getComponent("boardNode")
+      node.setHoleValue=value;
+      return node;
     },
     setHoleType(hole,name){
-        hole.getComponent("boardNode").setHoleName(name);
+      let node=  hole.getComponent("boardNode");
+      node.setHoleName(name);
+      return node;
     },
     setHoleX(hole,x){
-        hole.getComponent("boardNode").nodeX=x;
+      let node=  hole.getComponent("boardNode")
+      node.nodeX=x;
+      return node;
     },
      setHoleY(hole,y){
-       hole.getComponent("boardNode").nodeY=y;
+      let node= hole.getComponent("boardNode")
+      node.nodeY=y;
+      return node;
     },
     setHolePos(hole,info){
-      let holeNode= hole.getComponent("boardNode");
-      holeNode.setHolePos(info.x,info.y)
+      let node= hole.getComponent("boardNode");
+      node.setHolePos(info.x,info.y)
+      return node
 
     },
     setHoleInfo(hole,info){
@@ -316,9 +363,42 @@ cc.Class({
       holeNode.setHoleY(info.y);
       holeNode.setHoleName(info.name);
       holeNode.setHoleValue(info.value);
+      return holeNode;
 
     },
+    initBoardState(){
+      // populate initial state of the board
 
+          //normal holes
+           this.getHole(2,1).addKete(2);
+          this.getHole(3,1).addKete(2);
+           this.getHole(4,2).addKete(2);
+           this.getHole(5,2).addKete(2);
+          //nyumba holes
+         this.getHole(4,1).addKete(6);
+          this.getHole(4,1).setHoleName("south-nyumba");
+          this.getHole(3,2).addKete(6);
+          this.getHole(3,2).setHoleName("north-nyumba");
+
+          //stores holes;
+          this.getHole(0,4).addKete(22);
+          this.getHole(0,4).setHoleName("south-store");
+          this.getHole(1,4).addKete(22);
+          this.getHole(1,4).setHoleName("north-store");
+
+
+          //kimbi and kichwa
+            this.getHole(0,1).setHoleName("kichwa-l");
+            this.getHole(0,2).setHoleName("kichwa-l");
+            this.getHole(7,1).setHoleName("kichwa-r");
+            this.getHole(7,2).setHoleName("kichwa-r");
+
+            this.getHole(1,1).setHoleName("kimbi-l");
+            this.getHole(1,2).setHoleName("kimbi-l");
+            this.getHole(6,1).setHoleName("kimbi-r");
+            this.getHole(6,2).setHoleName("kimbi-r");
+            return this;
+    },
 
     insertPrefab(prefab){
       var node = cc.instantiate(prefab);
