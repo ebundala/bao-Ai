@@ -12,6 +12,11 @@ cc.Class({
          default: null,
          type:cc.Node
        },
+      
+       info:{
+         default:null,
+         type:cc.Label
+       },
        holeslist:[Array],
 
        kete:{
@@ -44,6 +49,10 @@ cc.Class({
        hand:{
          default: null,
          type:cc.Prefab
+       },
+       activeHole:{
+         default:null,
+         type:cc.Node
        }
 
 
@@ -94,6 +103,25 @@ cc.Class({
 
      hole.setPosition(cc.p(offset_x+x*dx,offset_y+y*dy));
      this.setHolePos(hole,{x,y});
+
+
+     hole.on(cc.Node.EventType.TOUCH_END, function (event)
+     {
+        // var touches = event.getTouches();
+         //var touchLoc = touches[0].getLocation();
+         //console.log();
+         //this.addKete(5);
+         let node =event.target;//.getComponent("boardNode");
+         this.activeHole=node;
+         //this.addKete(node,5);
+         //let value=this.getHoleValue(node);
+         //this.removeKete(node,value);
+         //this.sow(value,this.getHoleComponent(node),"left","south");
+
+         //console.log(value);
+
+     }, this);
+
      this.holeslist[y][x]=hole;
 
    }
@@ -103,15 +131,15 @@ cc.Class({
 // populate initial state of the board
 
     //normal holes
-    // this.getHole(2,1).addKete(2);
-    // this.getHole(3,1).addKete(2);
-    // this.getHole(4,2).addKete(2);
-     //this.getHole(5,2).addKete(2);
+     this.getHole(2,1).addKete(2);
+    this.getHole(3,1).addKete(2);
+     this.getHole(4,2).addKete(2);
+     this.getHole(5,2).addKete(2);
     //nyumba holes
-  //  this.getHole(4,1).addKete(6);
-    //this.getHole(4,1).setHoleName("south-nyumba");
-  //  this.getHole(3,2).addKete(6);
-  //  this.getHole(3,2).setHoleName("north-nyumba");
+   this.getHole(4,1).addKete(6);
+    this.getHole(4,1).setHoleName("south-nyumba");
+    this.getHole(3,2).addKete(6);
+    this.getHole(3,2).setHoleName("north-nyumba");
 
     //stores holes;
     this.getHole(0,4).addKete(22);
@@ -131,14 +159,32 @@ cc.Class({
       this.getHole(6,1).setHoleName("kimbi-r");
       this.getHole(6,2).setHoleName("kimbi-r");
 
-      this.sow(19,this.getHole(7,2),"right","north");
+      //this.sow(19,this.getHole(7,2),"right","north");
+
+
+      // var self=this;
+      // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
+      //     var touches = event.getTouches();
+      //     var touchLoc = touches[0].getLocation();
+      //     //console.log(touchLoc);
+      //
+      // }, self.node);
+      // self.root.on(cc.Node.EventType.TOUCH_MOVE, function (event) {
+      //     var touches = event.getTouches();
+      //     var touchLoc = touches[0].getLocation();
+      //
+      //
+      // }, self.node);
+      // self.root.on(cc.Node.EventType.TOUCH_END, function (event) {
+      //    // when touch ended, stop moving
+      // }, self.node);
+
+
+
 
     },
     sow(kete,startHole,direction,player){
-      //let hole =this.getHoleComponent(startHole);
       let holePos=this.getHolePos(startHole);
-    //  let condition;
-
          while(kete>0){
 
 
@@ -194,10 +240,11 @@ cc.Class({
                 }else{
                   kete--;
                 }
-                console.log(direction+" x y ",holePos.x+" ",holePos.y);
+                //console.log(direction+" x y ",holePos.x+" ",holePos.y);
                 this.getHole(holePos.x,holePos.y).addKete(1);
 
          }
+         return holePos;
     },
 
 
@@ -213,7 +260,7 @@ cc.Class({
       hole.getComponent("boardNode").addKete(i);
     },
     removeKete(hole,i){
-      hole.getComponent("boardNode").addKete(i);
+      hole.getComponent("boardNode").removeKete(i);
     },
     getHoleValue(hole){
       return hole.getComponent("boardNode").value;
@@ -283,7 +330,9 @@ cc.Class({
           return cc.p(cc.randomMinus1To1() * this.randomRange.x, cc.randomMinus1To1() * this.randomRange.y);
       },
     // called every frame, uncomment this function to activate update callback
-    // update: function (dt) {
+     update: function (dt) {
+       let info=this.activeHole?this.getHolePos(this.activeHole):{x:0,y:0};
+       this.info.string="Turn: Yours"+" Hole: "+info.x+","+info.y
 
-    // },
+     },
 });

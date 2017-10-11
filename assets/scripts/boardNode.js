@@ -2,6 +2,7 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
+
       root:{
         default:null,
         type:cc.Node
@@ -34,7 +35,23 @@ cc.Class({
     // use this for initialization
     onLoad: function () {
       this.label.string=this.value;
-      this.addKete(this.value);
+    //  this.addKete(this.value);
+    // var self=this;
+    // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
+    //     var touches = event.getTouches();
+    //     var touchLoc = touches[0].getLocation();
+    //     console.log(touchLoc);
+    //
+    // }, self.node);
+    // self.root.on(cc.Node.EventType.TOUCH_MOVE, function (event) {
+    //     var touches = event.getTouches();
+    //     var touchLoc = touches[0].getLocation();
+    //
+    //
+    // }, self.node);
+    // self.root.on(cc.Node.EventType.TOUCH_END, function (event) {
+    //    // when touch ended, stop moving
+    // }, self.node);
 
 
 
