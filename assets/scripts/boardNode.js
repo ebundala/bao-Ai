@@ -35,28 +35,27 @@ cc.Class({
       return node;
     },
     getRandomPosition: function() {
-          return cc.p(cc.randomMinus1To1() * this.root.width/2, cc.randomMinus1To1() * this.root.height/2);
-      },
-
-      showHightlight(){
-        this.hightlight.node.active=true;
-        return this;
-      },
-      hideHighlight(){
-        this.hightlight.node.active=false;
-        return this;
-      },
-      highlightBlink(t){
-        this.showHightlight();
-        this.scheduleOnce(this.hideHighlight.bind(this),t)
-        return this;
-      },
+      return cc.p(cc.randomMinus1To1() * this.root.width/2, cc.randomMinus1To1() * this.root.height/2);
+    },
+    showHightlight(color){
+      if(color)
+      this.hightlight.node.color=color;
+      this.hightlight.node.active=true;
+      return this;
+    },
+    hideHighlight(){
+      this.hightlight.node.active=false;
+      return this;
+    },
+    highlightBlink(t){
+      this.showHightlight();
+      this.scheduleOnce(this.hideHighlight.bind(this),t)
+      return this;
+    },
     // use this for initialization
     onLoad: function () {
       this.label.string=this.value;
       this.hideHighlight();
-
-
     //  this.addKete(this.value);
     // var self=this;
     // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
@@ -74,9 +73,6 @@ cc.Class({
     // self.root.on(cc.Node.EventType.TOUCH_END, function (event) {
     //    // when touch ended, stop moving
     // }, self.node);
-
-
-
     },
     addKete(i){
       for (var j = 0; j < i; j++) {
@@ -93,8 +89,8 @@ cc.Class({
       this.keteList.pop().removeFromParent(true);
       this.value--;
 
-    }
-    return this;
+       }
+        return this;
     },
     setHoleName(name){
       this.bName=name;
@@ -105,16 +101,14 @@ cc.Class({
       return this;
     },
     setHolePos(x,y){
-      this.nodeY=y;
-      this.nodeX=x;
-      return this;
+        this.nodeY=y;
+        this.nodeX=x;
+        return this;
     },
-
-
     // called every frame, uncomment this function to activate update callback
      update: function (dt) {
 
-  this.label.string=this.value;
+         this.label.string=this.value;
 
      },
 });

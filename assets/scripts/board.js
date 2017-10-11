@@ -61,99 +61,88 @@ cc.Class({
 
     // use this for initialization
     onLoad: function () {
-  this.holeslist=[new Array(8),new Array(8),new Array(8),new Array(8),new Array(8)];
-  this.hands={south:0,north:0,turn:0};
-  let i=8,j=4,y=0,x=0;
-  let dy=(this.root.height-160)/j;
-  let dx=(this.root.width-320)/i;
-  let offset_x=160,offset_y=80;
-  let mbao =this.insertPrefab(this.mbao);
-  mbao.setPosition(cc.p(offset_x,offset_y));
+      this.holeslist=[new Array(8),new Array(8),new Array(8),new Array(8),new Array(8)];
+      this.hands={south:0,north:0,turn:0};
+      let i=8,j=4,y=0,x=0;
+      let dy=(this.root.height-160)/j;
+      let dx=(this.root.width-320)/i;
+      let offset_x=160,offset_y=80;
+      let mbao =this.insertPrefab(this.mbao);
+      mbao.setPosition(cc.p(offset_x,offset_y));
+      //create the playing board
+      for(y=0;y<j;y++){
+         for(x=0;x<i;x++)
+         {
+           let row=[];
+           let store;
+           let pattern;
+           if(x===0&&y===0){
+             store=this.insertPrefab(this.store);
+             store.position=cc.p(offset_x-80,offset_y);
+             pattern=this.insertPrefab(this.pattern);
+             pattern.setPosition(cc.p(offset_x-dx,offset_y+2*dy));
+             this.holeslist[4][0]=store;//south store hole
+           }
+           else if (x===7&&y===3) {
+             store=this.insertPrefab(this.store);
+             store.setPosition(cc.p(offset_x+x*dx+dx,offset_y+y*dy-dy));
+             pattern=this.insertPrefab(this.pattern);
+             pattern.setPosition(cc.p(offset_x+x*dx+dx,offset_y))
+             this.holeslist[4][1]=store;//north store hole
+
+           }
+
+           let hole;
+           if(x===3&&y===2||x===4&&y===1){
+             hole = this.insertPrefab(this.nyumba);
+           }else {
+             hole = this.insertPrefab(this.hole);
+           }
+
+           hole.setPosition(cc.p(offset_x+x*dx,offset_y+y*dy));
+           this.setHolePos(hole,{x,y});
 
 
-//create the playing board
-  for(y=0;y<j;y++){
-   for(x=0;x<i;x++)
-   {
-     let row=[];
-     let store;
-     let pattern;
-     if(x===0&&y===0){
-      store=this.insertPrefab(this.store);
-      store.position=cc.p(offset_x-80,offset_y);
-      pattern=this.insertPrefab(this.pattern);
-      pattern.setPosition(cc.p(offset_x-dx,offset_y+2*dy));
-      this.holeslist[4][0]=store;//south store hole
-     }
-     else if (x===7&&y===3) {
-       store=this.insertPrefab(this.store);
-       store.setPosition(cc.p(offset_x+x*dx+dx,offset_y+y*dy-dy));
-       pattern=this.insertPrefab(this.pattern);
-       pattern.setPosition(cc.p(offset_x+x*dx+dx,offset_y))
-       this.holeslist[4][1]=store;//north store hole
+           hole.on(cc.Node.EventType.TOUCH_END, function (event)
+           {
+             // var touches = event.getTouches();
+             //var touchLoc = touches[0].getLocation();
+             let node =event.target;
+             this.removeActiveHole();
+             this.setActiveHole(node)
 
-     }
-
-     let hole;
-     if(x===3&&y===2||x===4&&y===1){
-        hole = this.insertPrefab(this.nyumba);
-     }else {
-         hole = this.insertPrefab(this.hole);
-     }
-
-     hole.setPosition(cc.p(offset_x+x*dx,offset_y+y*dy));
-     this.setHolePos(hole,{x,y});
+             let value=this.getHoleValue(this.getActiveHole());
 
 
-     hole.on(cc.Node.EventType.TOUCH_END, function (event)
-     {
-        // var touches = event.getTouches();
-         //var touchLoc = touches[0].getLocation();
-         let node =event.target;
-         this.removeActiveHole();
-         this.setActiveHole(node)
+             console.log(value);
 
-         let value=this.getHoleValue(this.getActiveHole());
+           }, this);
 
+           this.holeslist[y][x]=hole;
 
-         console.log(value);
+         }
 
-     }, this);
-
-     this.holeslist[y][x]=hole;
-
-   }
-
-  }
-
-   this.addTouchToStores().initBoardState();
-
-
-
-      // this.scheduleOnce(function () {
-      //   this.sow(19,this.getHole(7,2),"right","north")
-      // }.bind(this),5);
-
-      // var self=this;
-      // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
-      //     var touches = event.getTouches();
-      //     var touchLoc = touches[0].getLocation();
-      //     //console.log(touchLoc);
-      //
-      // }, self.node);
-      // self.root.on(cc.Node.EventType.TOUCH_MOVE, function (event) {
-      //     var touches = event.getTouches();
-      //     var touchLoc = touches[0].getLocation();
-      //
-      //
-      // }, self.node);
-      // self.root.on(cc.Node.EventType.TOUCH_END, function (event) {
-      //    // when touch ended, stop moving
-      // }, self.node);
-
-
-
-
+      }
+       this.addTouchToStores().initBoardState();
+          // this.scheduleOnce(function () {
+          //   this.sow(19,this.getHole(7,2),"right","north")
+          // }.bind(this),5);
+          // var self=this;
+          // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
+          //     var touches = event.getTouches();
+          //     var touchLoc = touches[0].getLocation();
+          //     //console.log(touchLoc);
+          //
+          // }, self.node);
+          // self.root.on(cc.Node.EventType.TOUCH_MOVE, function (event) {
+          //     var touches = event.getTouches();
+          //     var touchLoc = touches[0].getLocation();
+          //
+          //
+          // }, self.node);
+          // self.root.on(cc.Node.EventType.TOUCH_END, function (event) {
+          //    // when touch ended, stop moving
+          // }, self.node);
     },
     addTouchToStores(){
       this.getRawHole(0,4).on(cc.Node.EventType.TOUCH_END, function (event)
@@ -256,7 +245,7 @@ cc.Class({
       {
       this.activeHole=hole;
       let node=this.getHoleComponent(hole)
-      node.showHightlight();
+      node.showHightlight(cc.Color.GREEN);
       return node;
     }
       return null;
@@ -283,9 +272,8 @@ cc.Class({
       return this.holeslist[y][x];
     },
 
-    getHoleComponent(hole)
-    {
-    return  hole.getComponent("boardNode");
+    getHoleComponent(hole){
+     return  hole.getComponent("boardNode");
     },
 
     addKete(hole,i){
@@ -315,13 +303,13 @@ cc.Class({
       return {y:holeNode.nodeY,x:holeNode.nodeX,};
 
     },
-    getHoleInfo(hole) {
-    let holeNode= hole.getComponent("boardNode");
-    return { value:holeNode.value,
-      x:holeNode.nodeX,
-      y:holeNode.nodeY,
-      name:holeNode.bName
-    };
+    getHoleInfo(hole){
+      let holeNode= hole.getComponent("boardNode");
+      return { value:holeNode.value,
+        x:holeNode.nodeX,
+        y:holeNode.nodeY,
+        name:holeNode.bName
+      };
 
     }
   ,
