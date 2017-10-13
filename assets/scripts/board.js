@@ -17,11 +17,14 @@ cc.Class({
          type:cc.Label
        },
        holeslist:[Array],
-
-      //  kete:{
-      //    default: null,
-      //    type:cc.Prefab
-      //  },
+       arrows:{
+         default:null,
+         type:cc.Node
+       },
+       arrow:{
+         default: null,
+         type:cc.Prefab
+       },
 
        hole:{
          default: null,
@@ -54,13 +57,11 @@ cc.Class({
          type:cc.Node
        },
        turn:0
-
-
-
     },
 
     // use this for initialization
     onLoad: function () {
+      this.arrows=new Object();
       this.holeslist=[new Array(8),new Array(8),new Array(8),new Array(8),new Array(8)];
       this.hands={south:0,north:0,turn:0};
       let i=8,j=4,y=0,x=0;
@@ -105,8 +106,9 @@ cc.Class({
 
            hole.on(cc.Node.EventType.TOUCH_END, function (event)
            {
-             // var touches = event.getTouches();
-             //var touchLoc = touches[0].getLocation();
+            //  var touches = event.getTouches();
+            // var touchLoc = touches[0].getLocation();
+
              let node =event.target;
              this.removeActiveHole();
              this.setActiveHole(node)
@@ -114,6 +116,12 @@ cc.Class({
              let value=this.getHoleValue(this.getActiveHole());
 
 
+          let pos=node.getPosition();
+          let width=node.width;
+          let height=node.height;
+             console.log(pos,width,height);
+            this.setArrowsPos(pos,width,height);
+             this.showArrows(node);
              console.log(value);
 
            }, this);
@@ -143,6 +151,178 @@ cc.Class({
           // self.root.on(cc.Node.EventType.TOUCH_END, function (event) {
           //    // when touch ended, stop moving
           // }, self.node);
+
+      this.addArrows();
+
+
+    },
+    setDirection(value){
+      this.direction=value;
+      console.log(value);
+    },
+    setArrowsPos(pos,width,height){
+      pos.y=pos.y+height/2;
+      pos.x=pos.x+width/2
+      this.arrows.up.setPosition(cc.p(pos.x,pos.y+height));
+      this.arrows.down.setPosition(cc.p(pos.x,pos.y-height));
+      this.arrows.left.setPosition(cc.p(pos.x+width,pos.y));
+      this.arrows.right.setPosition(cc.p(pos.x-width,pos.y));
+    },
+    addArrows(){
+      //insert arrows Prefabs
+
+      this.arrows.right=this.insertPrefab(this.arrow);
+      this.arrows.right.setRotation(180);
+      this.arrows.left=this.insertPrefab(this.arrow);
+      this.arrows.left.setRotation(0);
+
+      this.arrows.up=this.insertPrefab(this.arrow);
+      this.arrows.up.setRotation(270);
+      this.arrows.down=this.insertPrefab(this.arrow);
+      this.arrows.down.setRotation(90);
+
+      //click listeners
+      this.arrows.right.on(cc.Node.EventType.TOUCH_END, function (event)
+      {
+      let node =event.target;
+      //set direction here
+      this.setDirection("right");
+
+      //hide arrows here
+      this.hideArrows();
+
+      }, this);
+
+      this.arrows.left.on(cc.Node.EventType.TOUCH_END, function (event)
+      {
+      let node =event.target;
+      //set direction here
+      this.setDirection("left");
+
+      //hide arrows here
+      this.hideArrows();
+      }, this);
+      this.arrows.up.on(cc.Node.EventType.TOUCH_END, function (event)
+      {
+      let node =event.target;
+      //set direction here
+      this.setDirection("up");
+
+      //hide arrows here
+      this.hideArrows();
+      }, this);
+      this.arrows.down.on(cc.Node.EventType.TOUCH_END, function (event)
+      {
+      let node =event.target;
+      //set direction here
+      this.setDirection("down");
+
+      //hide arrows here
+      this.hideArrows();
+      }, this);
+
+
+    this.hideArrows();
+    },
+
+    hideArrows(mode="all"){
+
+
+      switch (mode) {
+        case "up-right":
+        this.arrows.up.active=false;
+        this.arrows.right.active=false;
+          break;
+        case "up-left":
+        this.arrows.up.active=false;
+        this.arrows.left.active=false;
+          break;
+        case "down-right":
+        this.arrows.down.active=false;
+        this.arrows.right.active=false;
+          break;
+        case "down-left":
+        this.arrows.down.active=false;
+        this.arrows.left.active=false;
+          break;
+        case "horizontal":
+        this.arrows.left.active=false;
+        this.arrows.right.active=false;
+          break;
+        case "vertical":
+        this.arrows.up.active=false;
+        this.arrows.down.active=false;
+          break;
+        case "left":
+        this.arrows.left.active=false;
+         break;
+        case "right":
+        this.arrows.right.active=false;
+         break;
+        case "up":
+        this.arrows.up.active=false;
+        break;
+        case "down":
+        this.arrows.down.active=false;
+        break;
+        default:
+        this.arrows.left.active=false;
+        this.arrows.right.active=false;
+        this.arrows.up.active=false;
+        this.arrows.down.active=false;
+      }
+
+    },
+
+    showArrows(node,mode="all"){
+      console.log(node.getPosition())
+
+      switch (mode) {
+        case "up-right":
+        this.arrows.up.active=true;
+        this.arrows.right.active=true;
+          break;
+        case "up-left":
+        this.arrows.up.active=true;
+        this.arrows.left.active=true;
+
+        break;
+        case "down-right":
+        this.arrows.down.active=true;
+        this.arrows.right.active=true;
+          break;
+        case "down-left":
+        this.arrows.down.active=true;
+        this.arrows.left.active=true;
+          break;
+        case "horizontal":
+        this.arrows.left.active=true;
+        this.arrows.right.active=true;
+          break;
+        case "vertical":
+        this.arrows.up.active=true;
+        this.arrows.down.active=true;
+          break;
+        case "left":
+        this.arrows.left.active=true;
+         break;
+        case "right":
+        this.arrows.right.active=true;
+         break;
+        case "up":
+        this.arrows.up.active=true;
+        break;
+        case "down":
+        this.arrows.down.active=true;
+        break;
+        default:
+        this.arrows.left.active=true;
+        this.arrows.right.active=true;
+        this.arrows.up.active=true;
+        this.arrows.down.active=true;
+
+      }
+
     },
     addTouchToStores(){
       this.getRawHole(0,4).on(cc.Node.EventType.TOUCH_END, function (event)
@@ -243,20 +423,20 @@ cc.Class({
     setActiveHole(hole){
       if(hole)//Todo check if instance of hole
       {
-      this.activeHole=hole;
-      let node=this.getHoleComponent(hole)
-      node.showHightlight(cc.Color.GREEN);
-      return node;
-    }
+        this.activeHole=hole;
+        let node=this.getHoleComponent(hole)
+        node.showHightlight(cc.Color.GREEN);
+        return node;
+      }
       return null;
     },
     removeActiveHole(){
-      if(this.activeHole)//check if instance of a hole
-      {
-      let node=this.getHoleComponent(this.activeHole)
-      node.hideHighlight();
-      return node;
-    }
+        if(this.activeHole)//check if instance of a hole
+        {
+        let node=this.getHoleComponent(this.activeHole)
+        node.hideHighlight();
+        return node;
+      }
       this.activeHole=null;
       return null;
     },
@@ -317,7 +497,7 @@ cc.Class({
        let node=hole.getComponent("boardNode");
        node.bName=name;
        return node;
-    },
+      },
     setHoleValue(hole,value){
       let node= hole.getComponent("boardNode")
       node.setHoleValue=value;
@@ -337,7 +517,7 @@ cc.Class({
       let node= hole.getComponent("boardNode")
       node.nodeY=y;
       return node;
-    },
+     },
     setHolePos(hole,info){
       let node= hole.getComponent("boardNode");
       node.setHolePos(info.x,info.y)
@@ -345,7 +525,7 @@ cc.Class({
 
     },
     setHoleInfo(hole,info){
-    let holeNode= hole.getComponent("boardNode");
+       let holeNode= hole.getComponent("boardNode");
 
       holeNode.setHoleY(info.x);
       holeNode.setHoleY(info.y);
@@ -388,9 +568,9 @@ cc.Class({
             return this;
     },
 
-    insertPrefab(prefab){
+    insertPrefab(prefab,parent=this.root){
       var node = cc.instantiate(prefab);
-      node.parent = this.root;
+      node.parent = parent;
       return node;
     },
 

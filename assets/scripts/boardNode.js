@@ -7,6 +7,7 @@ cc.Class({
         default:null,
         type:cc.Node
       },
+
       hightlight:{
         default:null,
         type:cc.Sprite
@@ -16,6 +17,11 @@ cc.Class({
         default:null,
         type:cc.Prefab
       },
+      // arrow:{
+      //   default:null,
+      //   type:cc.Prefab
+      // },
+
       keteList:{
         default:[],
         type:[cc.Node]
@@ -24,14 +30,15 @@ cc.Class({
         default:null,
         type:cc.Label
       },
+
       bName:"",
       nodeX:0,
       nodeY:0,
       value:5,
     },
-    insertPrefab(prefab){
+    insertPrefab(prefab,parent=this.root){
       var node = cc.instantiate(prefab);
-      node.parent = this.root;
+      node.parent = parent;
       return node;
     },
     getRandomPosition: function() {
@@ -52,10 +59,16 @@ cc.Class({
       this.scheduleOnce(this.hideHighlight.bind(this),t)
       return this;
     },
+
+
     // use this for initialization
     onLoad: function () {
+
+
+    
       this.label.string=this.value;
       this.hideHighlight();
+
     //  this.addKete(this.value);
     // var self=this;
     // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
