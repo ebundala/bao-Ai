@@ -1,3 +1,6 @@
+//Todo remove initialization of board to gameplay logic
+//enable initialization of board from an array/data structure from gameplay logic;
+
 cc.Class({
     extends: cc.Component,
 
@@ -12,11 +15,15 @@ cc.Class({
          default: null,
          type:cc.Node
        },
+       //game infos display
+       //Todo add more features and expose to gameplay logic for manipulation
        info:{
          default:null,
          type:cc.Label
        },
+       //main array to hold holes
        holeslist:[Array],
+       //arrows node
        arrows:{
          default:null,
          type:cc.Node
@@ -48,6 +55,7 @@ cc.Class({
          type:cc.Prefab
        },
 
+     //a hand will be used for sowing animations graphics only probably
        hand:{
          default: null,
          type:cc.Prefab
@@ -56,14 +64,19 @@ cc.Class({
          default:null,
          type:cc.Node
        },
-       turn:0
+       gameRules:[],
+       direction:""
     },
 
     // use this for initialization
     onLoad: function () {
+
+      this.gameRules=new Array();
       this.arrows=new Object();
+    },
+    defaultBaoBoardLayout(){
       this.holeslist=[new Array(8),new Array(8),new Array(8),new Array(8),new Array(8)];
-      this.hands={south:0,north:0,turn:0};
+
       let i=8,j=4,y=0,x=0;
       let dy=(this.root.height-160)/j;
       let dx=(this.root.width-320)/i;
@@ -113,16 +126,16 @@ cc.Class({
              this.removeActiveHole();
              this.setActiveHole(node)
 
-             let value=this.getHoleValue(this.getActiveHole());
+            // let value=this.getHoleValue(this.getActiveHole());
 
 
           let pos=node.getPosition();
           let width=node.width;
           let height=node.height;
-             console.log(pos,width,height);
+
             this.setArrowsPos(pos,width,height);
-             this.showArrows(node);
-             console.log(value);
+            this.showArrows(node,"horizontal");
+            // console.log(value);
 
            }, this);
 
@@ -131,34 +144,90 @@ cc.Class({
          }
 
       }
-       this.addTouchToStores();//.initBoardState();
-          // this.scheduleOnce(function () {
-          //   this.sow(19,this.getHole(7,2),"right","north")
-          // }.bind(this),5);
-          // var self=this;
-          // self.root.on(cc.Node.EventType.TOUCH_START, function (event) {
-          //     var touches = event.getTouches();
-          //     var touchLoc = touches[0].getLocation();
-          //     //console.log(touchLoc);
-          //
-          // }, self.node);
-          // self.root.on(cc.Node.EventType.TOUCH_MOVE, function (event) {
-          //     var touches = event.getTouches();
-          //     var touchLoc = touches[0].getLocation();
-          //
-          //
-          // }, self.node);
-          // self.root.on(cc.Node.EventType.TOUCH_END, function (event) {
-          //    // when touch ended, stop moving
-          // }, self.node);
-
-      this.addArrows();
-
-
+       this.addTouchToStores();
     },
+    initBaoBoardState(){
+      // populate initial state of the board
+
+          //normal holes
+           this.getHole(2,1).addKete(2);
+          this.getHole(3,1).addKete(2);
+           this.getHole(4,2).addKete(2);
+           this.getHole(5,2).addKete(2);
+          //nyumba holes
+         this.getHole(4,1).addKete(6);
+          this.getHole(4,1).setHoleName("south-nyumba");
+          this.getHole(3,2).addKete(6);
+          this.getHole(3,2).setHoleName("north-nyumba");
+
+          //stores holes;
+          this.getHole(0,4).addKete(22);
+          this.getHole(0,4).setHoleName("south-store");
+          this.getHole(1,4).addKete(22);
+          this.getHole(1,4).setHoleName("north-store");
+
+
+          //kimbi and kichwa
+            this.getHole(0,1).setHoleName("kichwa-l");
+            this.getHole(0,2).setHoleName("kichwa-l");
+            this.getHole(7,1).setHoleName("kichwa-r");
+            this.getHole(7,2).setHoleName("kichwa-r");
+
+            this.getHole(1,1).setHoleName("kimbi-l");
+            this.getHole(1,2).setHoleName("kimbi-l");
+            this.getHole(6,1).setHoleName("kimbi-r");
+            this.getHole(6,2).setHoleName("kimbi-r");
+            return this;
+    },
+    addTouchToStores(){
+      this.getRawHole(0,4).on(cc.Node.EventType.TOUCH_END, function (event)
+      {
+         // var touches = event.getTouches();
+          //var touchLoc = touches[0].getLocation();
+          //console.log();
+          //this.addKete(5);
+
+          let node =event.target;//.getComponent("boardNode");
+          this.removeActiveHole();
+          this.setActiveHole(node)
+          //this.addKete(node,5);
+          let value=this.getHoleValue(this.getActiveHole());
+          //this.removeKete(node,value);
+          //this.sow(value,this.getHoleComponent(node),"left","south");
+
+          console.log(value);
+
+      }, this);
+
+       this.getRawHole(1,4).on(cc.Node.EventType.TOUCH_END, function (event)
+       {
+          // var touches = event.getTouches();
+           //var touchLoc = touches[0].getLocation();
+           let node =event.target;
+           this.removeActiveHole();
+           this.setActiveHole(node)
+           let value=this.getHoleValue(this.getActiveHole());
+           console.log(value);
+       }, this);
+       return this;
+    },
+    insertPrefab(prefab,parent=this.root){
+      var node = cc.instantiate(prefab);
+      node.parent = parent;
+      return node;
+    },
+    //helper to generate random position within range for kete
+    getRandomPosition: function() {
+          return cc.p(cc.randomMinus1To1() * this.randomRange.x, cc.randomMinus1To1() * this.randomRange.y);
+      },
+
+   //arrows and direction
     setDirection(value){
       this.direction=value;
       console.log(value);
+    },
+    getDirection(){
+      return this.direction;
     },
     setArrowsPos(pos,width,height){
       pos.y=pos.y+height/2;
@@ -186,10 +255,14 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection("right");
+      this.setDirection("left");
 
       //hide arrows here
       this.hideArrows();
+      //call game logic here
+      if(typeof(this.gamePlay)==="function"){
+        this.gamePlay();
+      }
 
       }, this);
 
@@ -197,10 +270,14 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection("left");
+      this.setDirection("right");
 
       //hide arrows here
       this.hideArrows();
+      //gamePlay logic
+      if(typeof(this.gamePlay)==="function"){
+        this.gamePlay();
+      }
       }, this);
       this.arrows.up.on(cc.Node.EventType.TOUCH_END, function (event)
       {
@@ -210,6 +287,10 @@ cc.Class({
 
       //hide arrows here
       this.hideArrows();
+      //gamePlay logic
+      if(typeof(this.gamePlay)==="function"){
+        this.gamePlay();
+      }
       }, this);
       this.arrows.down.on(cc.Node.EventType.TOUCH_END, function (event)
       {
@@ -219,12 +300,16 @@ cc.Class({
 
       //hide arrows here
       this.hideArrows();
+      //gamePlay logic
+      if(typeof(this.gamePlay)==="function"){
+        this.gamePlay();
+      }
+
       }, this);
 
 
-    this.hideArrows();
+        this.hideArrows();
     },
-
     hideArrows(mode="all"){
 
 
@@ -273,9 +358,8 @@ cc.Class({
       }
 
     },
-
     showArrows(node,mode="all"){
-      console.log(node.getPosition())
+
 
       switch (mode) {
         case "up-right":
@@ -324,39 +408,9 @@ cc.Class({
       }
 
     },
-    addTouchToStores(){
-      this.getRawHole(0,4).on(cc.Node.EventType.TOUCH_END, function (event)
-      {
-         // var touches = event.getTouches();
-          //var touchLoc = touches[0].getLocation();
-          //console.log();
-          //this.addKete(5);
 
-          let node =event.target;//.getComponent("boardNode");
-          this.removeActiveHole();
-          this.setActiveHole(node)
-          //this.addKete(node,5);
-          let value=this.getHoleValue(this.getActiveHole());
-          //this.removeKete(node,value);
-          //this.sow(value,this.getHoleComponent(node),"left","south");
 
-          console.log(value);
-
-      }, this);
-
-       this.getRawHole(1,4).on(cc.Node.EventType.TOUCH_END, function (event)
-       {
-          // var touches = event.getTouches();
-           //var touchLoc = touches[0].getLocation();
-           let node =event.target;
-           this.removeActiveHole();
-           this.setActiveHole(node)
-           let value=this.getHoleValue(this.getActiveHole());
-           console.log(value);
-       }, this);
-       return this;
-    },
-
+     //hole manipulators
     sow(kete,startHole,direction,player){
       let holePos=this.getHolePos(startHole);
          while(kete>0){
@@ -443,19 +497,15 @@ cc.Class({
     getActiveHole(){
       return this.activeHole;
     },
-
-
     getHole(x,y){
      return this.getHoleComponent(this.holeslist[y][x]);
     },
     getRawHole(x,y){
       return this.holeslist[y][x];
     },
-
     getHoleComponent(hole){
      return  hole.getComponent("boardNode");
     },
-
     addKete(hole,i){
       let node=  hole.getComponent("boardNode");
       node.addKete(i);
@@ -466,6 +516,8 @@ cc.Class({
       node.removeKete(i);
       return node
     },
+
+    //hole content getters and setters
     getHoleValue(hole){
       return hole.getComponent("boardNode").value;
     },
@@ -491,9 +543,8 @@ cc.Class({
         name:holeNode.bName
       };
 
-    }
-  ,
-     setHoleName(hole,name){
+    },
+    setHoleName(hole,name){
        let node=hole.getComponent("boardNode");
        node.bName=name;
        return node;
@@ -513,7 +564,7 @@ cc.Class({
       node.nodeX=x;
       return node;
     },
-     setHoleY(hole,y){
+    setHoleY(hole,y){
       let node= hole.getComponent("boardNode")
       node.nodeY=y;
       return node;
@@ -534,49 +585,23 @@ cc.Class({
       return holeNode;
 
     },
-    initBoardState(){
-      // populate initial state of the board
-
-          //normal holes
-           this.getHole(2,1).addKete(2);
-          this.getHole(3,1).addKete(2);
-           this.getHole(4,2).addKete(2);
-           this.getHole(5,2).addKete(2);
-          //nyumba holes
-         this.getHole(4,1).addKete(6);
-          this.getHole(4,1).setHoleName("south-nyumba");
-          this.getHole(3,2).addKete(6);
-          this.getHole(3,2).setHoleName("north-nyumba");
-
-          //stores holes;
-          this.getHole(0,4).addKete(22);
-          this.getHole(0,4).setHoleName("south-store");
-          this.getHole(1,4).addKete(22);
-          this.getHole(1,4).setHoleName("north-store");
-
-
-          //kimbi and kichwa
-            this.getHole(0,1).setHoleName("kichwa-l");
-            this.getHole(0,2).setHoleName("kichwa-l");
-            this.getHole(7,1).setHoleName("kichwa-r");
-            this.getHole(7,2).setHoleName("kichwa-r");
-
-            this.getHole(1,1).setHoleName("kimbi-l");
-            this.getHole(1,2).setHoleName("kimbi-l");
-            this.getHole(6,1).setHoleName("kimbi-r");
-            this.getHole(6,2).setHoleName("kimbi-r");
-            return this;
+    //gamePlay rules
+    addGameRule(rule){
+      this.gameRules.push(rule);
+    },
+    removeGameRule(rule){
+      //todo logic to remove game rule from rules array
+    },
+    gamePlay(){
+      if(this.gameRules.length){
+        for(let i=0;i<this.gameRules.length;i++){
+          if(typeof(this.gameRules[i])==="function"){
+            this.gameRules[i]();
+          }
+        }
+      }
     },
 
-    insertPrefab(prefab,parent=this.root){
-      var node = cc.instantiate(prefab);
-      node.parent = parent;
-      return node;
-    },
-
-    getRandomPosition: function() {
-          return cc.p(cc.randomMinus1To1() * this.randomRange.x, cc.randomMinus1To1() * this.randomRange.y);
-      },
     // called every frame, uncomment this function to activate update callback
      update: function (dt) {
        let info=this.activeHole?this.getHolePos(this.activeHole):{x:0,y:0};

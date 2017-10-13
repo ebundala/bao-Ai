@@ -194,6 +194,10 @@
       "__id__": 6
     },
     "holeslist": [],
+    "arrows": null,
+    "arrow": {
+      "__uuid__": "511b441f-63be-4be6-9f0a-c8133af41929"
+    },
     "hole": {
       "__uuid__": "05606f16-b913-4635-ab75-c9c72e3ccf0c"
     },
