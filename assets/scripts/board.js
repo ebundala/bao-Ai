@@ -123,7 +123,7 @@ cc.Class({
          }
 
       }
-       this.addTouchToStores().initBoardState();
+       this.addTouchToStores();//.initBoardState();
           // this.scheduleOnce(function () {
           //   this.sow(19,this.getHole(7,2),"right","north")
           // }.bind(this),5);
