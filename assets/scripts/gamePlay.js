@@ -2,6 +2,11 @@ const NAMUA=1;
 const MTAJI=2;
 const NORTH=2;
 const SOUTH=1;
+const LEFT=1;
+const RIGHT=2;
+const UP=3;
+const DOWN=4;
+
 cc.Class({
     extends: cc.Component,
 
@@ -30,19 +35,33 @@ cc.Class({
 
         var board=this.getBoard();
         let hole=board.getActiveHole();
+        let holeNode=board.getHoleComponent(hole);
 
         if(this.isHolePlayable(hole)){
+          holeNode.hideHighlight();
         let kete=board.getHoleValue(hole);
         let direction=board.getDirection();
+        if(this.turn===NORTH){
+        direction=board.invertDirection(direction)
+        }
+
         board.removeKete(hole,kete)
+
         board.sow(kete,hole,direction,this.turn);
         this.changeTurn();
+        }
+        else {
+
+        //  hole.hideHighlight();
+          holeNode.highlighBlink(0.5);
+          console.log("hole not allowed");
         }
       });
 
 
 
     },
+
     changeTurn(){
       this.turn=this.turn==NORTH?SOUTH:NORTH;
     },

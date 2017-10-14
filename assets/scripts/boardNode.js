@@ -8,7 +8,7 @@ cc.Class({
         type:cc.Node
       },
 
-      hightlight:{
+      highlight:{
         default:null,
         type:cc.Sprite
 
@@ -44,18 +44,18 @@ cc.Class({
     getRandomPosition: function() {
       return cc.p(cc.randomMinus1To1() * this.root.width/2, cc.randomMinus1To1() * this.root.height/2);
     },
-    showHightlight(color){
+    showHighlight(color){
       if(color)
-      this.hightlight.node.color=color;
-      this.hightlight.node.active=true;
+      this.highlight.node.color=color;
+      this.highlight.node.active=true;
       return this;
     },
     hideHighlight(){
-      this.hightlight.node.active=false;
+      this.highlight.node.active=false;
       return this;
     },
-    highlightBlink(t){
-      this.showHightlight();
+    highlighBlink(t,color=cc.Color.RED){
+      this.showHighlight(color);
       this.scheduleOnce(this.hideHighlight.bind(this),t)
       return this;
     },
@@ -65,7 +65,7 @@ cc.Class({
     onLoad: function () {
 
 
-    
+
       this.label.string=this.value;
       this.hideHighlight();
 

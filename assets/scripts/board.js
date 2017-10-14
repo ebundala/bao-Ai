@@ -2,6 +2,10 @@
 //enable initialization of board from an array/data structure from gameplay logic;
 const NORTH=2;
 const SOUTH=1;
+const LEFT=1;
+const RIGHT=2;
+const UP=3;
+const DOWN=4;
 cc.Class({
     extends: cc.Component,
 
@@ -230,6 +234,16 @@ cc.Class({
     getDirection(){
       return this.direction;
     },
+    invertDirection(direction){
+      if(direction===LEFT||direction===RIGHT){
+      direction=direction===LEFT?RIGHT:LEFT;}
+      else {
+        direction=direction===UP?DOWN:UP;
+      }
+
+      this.setDirection(direction);
+      return direction;
+    },
     setArrowsPos(pos,width,height){
       pos.y=pos.y+height/2;
       pos.x=pos.x+width/2
@@ -256,7 +270,7 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection("left");
+      this.setDirection(LEFT);
 
       //hide arrows here
       this.hideArrows();
@@ -271,7 +285,7 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection("right");
+      this.setDirection(RIGHT);
 
       //hide arrows here
       this.hideArrows();
@@ -284,7 +298,7 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection("up");
+      this.setDirection(UP);
 
       //hide arrows here
       this.hideArrows();
@@ -297,7 +311,7 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection("down");
+      this.setDirection(DOWN);
 
       //hide arrows here
       this.hideArrows();
@@ -419,18 +433,18 @@ cc.Class({
 
                if(player===SOUTH)
               {
-                if (direction==="left")
+                if (direction===LEFT)
                  {
                    if(holePos.x===0){
                      holePos.y>0?holePos.y--:holePos.y++;
-                     direction="right";
+                     direction=RIGHT;
                    }else{
                   holePos.x--;
                 }
 
               }else { //right direction
                   if(holePos.x===7){
-                    direction="left";
+                    direction=LEFT;
                     holePos.y>0?holePos.y--:holePos.y++;
                   }else{
                     holePos.x++;
@@ -441,18 +455,18 @@ cc.Class({
                 else if(player===NORTH) //north player logic
                 {
 
-                  if (direction==="left")
+                  if (direction===LEFT)
                    {
                      if(holePos.x===7){
                       holePos.y>2?holePos.y--:holePos.y++;
-                       direction="right";
+                       direction=RIGHT;
                      }else{
                     holePos.x++;
                   }
 
                 }else { //right direction
                     if(holePos.x===0){
-                      direction="left";
+                      direction=LEFT;
                       holePos.y>2?holePos.y--:holePos.y++;
                     }else{
                       holePos.x--;
@@ -480,7 +494,7 @@ cc.Class({
       {
         this.activeHole=hole;
         let node=this.getHoleComponent(hole)
-        node.showHightlight(cc.Color.GREEN);
+        node.showHighlight(cc.Color.GREEN);
         return node;
       }
       return null;
