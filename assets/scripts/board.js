@@ -1,6 +1,7 @@
 //Todo remove initialization of board to gameplay logic
 //enable initialization of board from an array/data structure from gameplay logic;
-
+const NORTH=2;
+const SOUTH=1;
 cc.Class({
     extends: cc.Component,
 
@@ -416,7 +417,7 @@ cc.Class({
          while(kete>0){
 
 
-               if(player==="south")
+               if(player===SOUTH)
               {
                 if (direction==="left")
                  {
@@ -437,7 +438,7 @@ cc.Class({
 
                 }
                 }
-                else //north player logic
+                else if(player===NORTH) //north player logic
                 {
 
                   if (direction==="left")
@@ -601,11 +602,14 @@ cc.Class({
         }
       }
     },
+    setDisplayInfo(info){
+      this.info.string=info;
+    },
 
     // called every frame, uncomment this function to activate update callback
      update: function (dt) {
-       let info=this.activeHole?this.getHolePos(this.activeHole):{x:0,y:0};
-       this.info.string="Turn: Yours"+" Hole: "+info.x+","+info.y
+      // let info=this.activeHole?this.getHolePos(this.activeHole):{x:0,y:0};
+       //
 
      },
 });
