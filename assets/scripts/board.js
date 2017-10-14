@@ -234,15 +234,17 @@ cc.Class({
     getDirection(){
       return this.direction;
     },
-    invertDirection(direction){
+    invertDirection(direction,commit=true){
+      let dir=direction;
       if(direction===LEFT||direction===RIGHT){
-      direction=direction===LEFT?RIGHT:LEFT;}
+      dir=direction===LEFT?RIGHT:LEFT;}
       else {
-        direction=direction===UP?DOWN:UP;
+        dir=direction===UP?DOWN:UP;
       }
-
-      this.setDirection(direction);
-      return direction;
+      if(commit){
+      this.setDirection(dir);
+       }
+      return dir;
     },
     setArrowsPos(pos,width,height){
       pos.y=pos.y+height/2;
@@ -426,7 +428,7 @@ cc.Class({
 
 
      //hole manipulators
-    sow(kete,startHole,direction,player){
+    sow(kete,startHole,direction,player,test=false){
       let holePos=this.getHolePos(startHole);
          while(kete>0){
 
@@ -484,7 +486,8 @@ cc.Class({
                   kete--;
                 }
                 //console.log(direction+" x y ",holePos.x+" ",holePos.y);
-                this.getHole(holePos.x,holePos.y).addKete(1)//.highlightBlink(0.1);
+                if(!test)
+                this.getHole(holePos.x,holePos.y).addKete(1);
 
          }
          return holePos;
@@ -603,6 +606,7 @@ cc.Class({
     //gamePlay rules
     addGameRule(rule){
       this.gameRules.push(rule);
+      return this;
     },
     removeGameRule(rule){
       //todo logic to remove game rule from rules array

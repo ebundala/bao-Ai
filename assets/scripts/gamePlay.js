@@ -37,7 +37,7 @@ cc.Class({
         let hole=board.getActiveHole();
         let holeNode=board.getHoleComponent(hole);
 
-        if(this.isHolePlayable(hole)){
+        if(this.isHolePlayable(hole)&&this.canCapture(hole)){
           holeNode.hideHighlight();
         let kete=board.getHoleValue(hole);
         let direction=board.getDirection();
@@ -56,8 +56,11 @@ cc.Class({
           holeNode.highlighBlink(0.5);
           console.log("hole not allowed");
         }
-      });
-
+      })
+    //  .addGameRule(()=>{console.log("another rule")})
+    //  .addGameRule(()=>{console.log("another rule")})
+    //  .addGameRule(()=>{console.log("another rule")})
+      //.addGameRule(()=>{console.log("another rule")})
 
 
     },
@@ -70,15 +73,71 @@ cc.Class({
       let owner=y>1?NORTH:SOUTH;
       return this.getBoard().getHoleValue(hole)>1&&this.turn===owner;
     },
-    canCapture(hole)
+    canCapture(hole=this.getBoard().getActiveHole())
     {
 
-      if(this.turn===NORTH){
+      let board=this.getBoard();
+      let lastHolePosLeft=this.getlastHolePos(hole,LEFT);
+      let lastHolePosRight=this.getlastHolePos(hole,RIGHT);
+      let vRight=0;
+      let vLeft=0;
 
-      }
-      else if(this.turn===SOUTH) {
+      //check if front line
+      if(this.isFrontRow(lastHolePosLeft)){
+      let lastHoleLeft=board.getHole(lastHolePosLeft.x,lastHolePosLeft.y);
+      vLeft =board.getHoleValue(lastHoleLeft);
+       }
+      if(this.isFrontRow(lastHolePosRight)){
+      let lastHoleRight=board.getHole(lastHolePosRight.x,lastHolePosRight.y);
+      vRight =board.getHoleValue(lastHoleRight);
+       }
+      //opposites holes
+      let lastHolePosLeftO=this.getOppositeHolePos(lastHolePosLeft);
+      let lastHolePosRightO=this.getOppositeHolePos(lastHolePosRight);
+      let vRightO=0;
+      let vLeft0=0
+        //check if front line
+      if(this.isFrontRow(lastHolePosLeftO)){
+      let lastHoleLeftO=board.getHole(lastHolePosLeftO.x,lastHolePosLeftO.y);
+      vLeft0=board.getHoleValue(lastHoleLeftO);
+       }
+      if(this.isFrontRow(lastHolePosRightO)){
+      let lastHoleRightO=board.getHole(lastHolePosRightO.x,lastHolePosRightO.y);
+       vRightO =board.getHoleValue(lastHoleRightO);
+       }
 
+
+
+      console.log(vLeft,vRight,vLeft0,vRightO)
+      return ((vLeft>0)&&(vLeft0>0))||((vRight>0)&&(vRightO>0))
+    },
+    isFrontRow(pos){
+      return pos.y===1||pos.y===2
+    },
+    getOppositeHolePos(pos){
+
+      if(this.turn===SOUTH){
+        pos.y++;
       }
+      else if(this.turn===NORTH) {
+        pos.y--;
+      }
+      return pos;
+    },
+    getlastHolePos(hole,direction){
+      let board=this.getBoard();
+      let pos;
+      let value=board.getHoleValue(hole);
+      //get last hole pos
+            if(this.turn===NORTH){
+              direction=board.invertDirection(direction,false);
+                pos =  board.sow(value,hole,direction,NORTH,true);
+            }
+            else if(this.turn===SOUTH) {
+            pos=  board.sow(value,hole,direction,SOUTH,true);
+          }
+          console.log(pos);
+          return pos;
     },
 
     // called every frame, uncomment this function to activate update callback
