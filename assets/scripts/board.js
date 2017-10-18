@@ -122,34 +122,34 @@ cc.Class({
            this.setHolePos(hole,{x,y});
 
 
-           hole.on(cc.Node.EventType.TOUCH_END, function (event)
-           {
-            //  var touches = event.getTouches();
-            // var touchLoc = touches[0].getLocation();
-
-             let node =event.target;
-             this.removeActiveHole();
-             this.setActiveHole(node)
-
-            // let value=this.getHoleValue(this.getActiveHole());
-
-
-          let pos=node.getPosition();
-          let width=node.width;
-          let height=node.height;
-
-            this.setArrowsPos(pos,width,height);
-            this.showArrows(node,"horizontal");
-            // console.log(value);
-
-           }, this);
+          //  hole.on(cc.Node.EventType.TOUCH_END, function (event)
+          //  {
+          //    //  var touches = event.getTouches();
+          //    // var touchLoc = touches[0].getLocation();
+          //
+          //    let node =event.target;
+          //    this.removeActiveHole();
+          //    this.setActiveHole(node)
+          //
+          //
+           //
+           //
+          //    let pos=node.getPosition();
+          //    let width=node.width;
+          //    let height=node.height;
+           //
+          //    this.setArrowsPos(pos,width,height);
+          //    this.showArrows(node,"horizontal");
+          //    // console.log(value);
+           //
+          //  }, this);
 
            this.holeslist[y][x]=hole;
 
          }
 
       }
-       this.addTouchToStores();
+       //this.addTouchToStores();
     },
     initBaoBoardState(){
       // populate initial state of the board
@@ -273,6 +273,7 @@ cc.Class({
       let node =event.target;
       //set direction here
       this.setDirection(LEFT);
+      console.log("LEFT")
 
       //hide arrows here
       this.hideArrows();
@@ -288,7 +289,7 @@ cc.Class({
       let node =event.target;
       //set direction here
       this.setDirection(RIGHT);
-
+      console.log("RIGHT")
       //hide arrows here
       this.hideArrows();
       //gamePlay logic
@@ -301,6 +302,7 @@ cc.Class({
       let node =event.target;
       //set direction here
       this.setDirection(UP);
+      console.log("UP")
 
       //hide arrows here
       this.hideArrows();
@@ -314,6 +316,7 @@ cc.Class({
       let node =event.target;
       //set direction here
       this.setDirection(DOWN);
+      console.log("DOWN")
 
       //hide arrows here
       this.hideArrows();
@@ -382,39 +385,75 @@ cc.Class({
         case "up-right":
         this.arrows.up.active=true;
         this.arrows.right.active=true;
+        this.arrows.left.active=false;
+        this.arrows.down.active=false;
           break;
         case "up-left":
         this.arrows.up.active=true;
         this.arrows.left.active=true;
 
+        this.arrows.right.active=false;
+
+        this.arrows.down.active=false;
+
         break;
         case "down-right":
         this.arrows.down.active=true;
         this.arrows.right.active=true;
+        this.arrows.left.active=false;
+
+        this.arrows.up.active=false;
+
           break;
         case "down-left":
         this.arrows.down.active=true;
         this.arrows.left.active=true;
+
+        this.arrows.right.active=false;
+        this.arrows.up.active=false;
+
           break;
         case "horizontal":
         this.arrows.left.active=true;
         this.arrows.right.active=true;
+
+        this.arrows.up.active=false;
+        this.arrows.down.active=false;
           break;
         case "vertical":
         this.arrows.up.active=true;
         this.arrows.down.active=true;
+        this.arrows.left.active=false;
+        this.arrows.right.active=false;
+
           break;
         case "left":
         this.arrows.left.active=true;
+
+        this.arrows.right.active=false;
+        this.arrows.up.active=false;
+        this.arrows.down.active=false;
          break;
         case "right":
         this.arrows.right.active=true;
+        this.arrows.left.active=false;
+
+        this.arrows.up.active=false;
+        this.arrows.down.active=false;
          break;
         case "up":
         this.arrows.up.active=true;
+        this.arrows.left.active=false;
+        this.arrows.right.active=false;
+
+        this.arrows.down.active=false;
         break;
         case "down":
         this.arrows.down.active=true;
+        this.arrows.left.active=false;
+        this.arrows.right.active=false;
+        this.arrows.up.active=false;
+
         break;
         default:
         this.arrows.left.active=true;
