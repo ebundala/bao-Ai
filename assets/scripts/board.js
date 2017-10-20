@@ -155,10 +155,10 @@ cc.Class({
       // populate initial state of the board
 
           //normal holes
-           this.getHole(2,1).addKete(2);
-          this.getHole(3,1).addKete(2);
-           this.getHole(4,2).addKete(2);
-           this.getHole(5,2).addKete(2);
+           this.getHole(1,2).addKete(2);
+          this.getHole(2,2).addKete(2);
+           this.getHole(5,1).addKete(2);
+           this.getHole(6,1).addKete(2);
           //nyumba holes
          this.getHole(4,1).addKete(6);
           this.getHole(4,1).setHoleName("south-nyumba");
