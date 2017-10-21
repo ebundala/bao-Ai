@@ -22,6 +22,7 @@ cc.Class({
       turn:1,
       stage:NAMUA,
       mode:NORMAL,
+      isSideLimited:false,
       inHand:0,
       action:ACTIONS.PICK
     },
@@ -46,205 +47,206 @@ cc.Class({
         for(x=0;x<8;x++)
         {
 
-          //first hole first row
-          if(x===0&&y===0){
-              hole=board.getRawHole(x,y);
-              hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
-                   //  var touches = event.getTouches();
-                   // var touchLoc = touches[0].getLocation();
-                   let node =event.target;
-                if(this.action===ACTIONS.SOW){
-
-                   board.removeActiveHole();
-                   board.setActiveHole(node)
-
-
-
-
-                   let pos=node.getPosition();
-                   let width=node.width;
-                   let height=node.height;
-
-                   board.setArrowsPos(pos,width,height);
-                   board.showArrows(node,"up-left");
-                   }
-                   // console.log(value);
-
-              },board);
-          }
-          //last hole first row
-          else if (x===7&&y===0) {
-            hole=board.getRawHole(x,y);
-            hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
-                 //  var touches = event.getTouches();
-                 // var touchLoc = touches[0].getLocation();
-             if(this.action===ACTIONS.SOW){
-                 let node =event.target;
-                 board.removeActiveHole();
-                 board.setActiveHole(node)
-                 let pos=node.getPosition();
-                 let width=node.width;
-                 let height=node.height;
-
-                 board.setArrowsPos(pos,width,height);
-                 board.showArrows(node,"up-right");
-                 // console.log(value);
-               }
-
-            },board);
-          }
-          //south kichwa hole left
-          else if (x===0&&y===1) {
-            hole=board.getRawHole(x,y);
-            hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
-                 //  var touches = event.getTouches();
-                 // var touchLoc = touches[0].getLocation();
-              if(this.action===ACTIONS.SOW){
-                 let node =event.target;
-                 board.removeActiveHole();
-                 board.setActiveHole(node)
-
-
-
-
-                 let pos=node.getPosition();
-                 let width=node.width;
-                 let height=node.height;
-
-                 board.setArrowsPos(pos,width,height);
-                 board.showArrows(node,"down-left");
-                 // console.log(value);
-               }
-
-            },board);
-          }
-          //south kichwa hole right
-          else if (x===7&&y===1) {
-            hole=board.getRawHole(x,y);
-            hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
-                 //  var touches = event.getTouches();
-                 // var touchLoc = touches[0].getLocation();
-                if(this.action===ACTIONS.SOW){
-                 let node =event.target;
-                 board.removeActiveHole();
-                 board.setActiveHole(node)
-
-
-
-
-                 let pos=node.getPosition();
-                 let width=node.width;
-                 let height=node.height;
-
-                 board.setArrowsPos(pos,width,height);
-                 board.showArrows(node,"down-right");
-                 // console.log(value);
-               }
-
-            },board);
-          }
-          //north kichwa hole left
-          else if (x===0&&y===2) {
-            hole=board.getRawHole(x,y);
-            hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
-                 //  var touches = event.getTouches();
-                 // var touchLoc = touches[0].getLocation();
-                if(this.action===ACTIONS.SOW){
-                 let node =event.target;
-                 board.removeActiveHole();
-                 board.setActiveHole(node)
-
-
-
-
-                 let pos=node.getPosition();
-                 let width=node.width;
-                 let height=node.height;
-
-                 board.setArrowsPos(pos,width,height);
-                 board.showArrows(node,"up-left");
-                 // console.log(value);
-               }
-
-            },board);
-          }
-          //north kichwa hole left
-          else if (x===7&&y===2) {
-            hole=board.getRawHole(x,y);
-            hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
-                 //  var touches = event.getTouches();
-                 // var touchLoc = touches[0].getLocation();
-              if(this.action===ACTIONS.SOW){
-                 let node =event.target;
-                 board.removeActiveHole();
-                 board.setActiveHole(node)
-
-
-
-
-                 let pos=node.getPosition();
-                 let width=node.width;
-                 let height=node.height;
-
-                 board.setArrowsPos(pos,width,height);
-                 board.showArrows(node,"up-right");
-                 // console.log(value);
-               }
-
-            },board);
-          }
-          //first hole last row
-          else if (x===0&&y===3) {
-            hole=board.getRawHole(x,y);
-            hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
-                 //  var touches = event.getTouches();
-                 // var touchLoc = touches[0].getLocation();
-               if(this.action===ACTIONS.SOW){
-                 let node =event.target;
-                 board.removeActiveHole();
-                 board.setActiveHole(node)
-
-
-
-
-                 let pos=node.getPosition();
-                 let width=node.width;
-                 let height=node.height;
-
-                 board.setArrowsPos(pos,width,height);
-                 board.showArrows(node,"down-left");
-                 // console.log(value);
-               }
-
-            },board);
-          }
-          //last hole last row
-          else if (x===7&&y===3) {
-            hole=board.getRawHole(x,y);
-            hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
-                 //  var touches = event.getTouches();
-                 // var touchLoc = touches[0].getLocation();
-               if(this.action===ACTIONS.SOW){
-                 let node =event.target;
-                 board.removeActiveHole();
-                 board.setActiveHole(node)
-
-
-
-
-                 let pos=node.getPosition();
-                 let width=node.width;
-                 let height=node.height;
-
-                 board.setArrowsPos(pos,width,height);
-                 board.showArrows(node,"down-right");
-                 // console.log(value);
-               }
-
-            },board);
-          }
-          //holes not on edges
-         else if(x>0&&x<7){
+        //   //first hole first row
+        //   if(x===0&&y===0){
+        //       hole=board.getRawHole(x,y);
+        //       hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
+        //            //  var touches = event.getTouches();
+        //            // var touchLoc = touches[0].getLocation();
+        //            let node =event.target;
+        //         if(this.action===ACTIONS.SOW){
+         //
+        //            board.removeActiveHole();
+        //            board.setActiveHole(node)
+         //
+         //
+         //
+         //
+        //            let pos=node.getPosition();
+        //            let width=node.width;
+        //            let height=node.height;
+         //
+        //            board.setArrowsPos(pos,width,height);
+        //            board.showArrows(node,"up-left");
+        //            }
+        //            // console.log(value);
+         //
+        //       },board);
+        //   }
+        //   //last hole first row
+        //   else if (x===7&&y===0) {
+        //     hole=board.getRawHole(x,y);
+        //     hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
+        //          //  var touches = event.getTouches();
+        //          // var touchLoc = touches[0].getLocation();
+        //      if(this.action===ACTIONS.SOW){
+        //          let node =event.target;
+        //          board.removeActiveHole();
+        //          board.setActiveHole(node)
+        //          let pos=node.getPosition();
+        //          let width=node.width;
+        //          let height=node.height;
+         //
+        //          board.setArrowsPos(pos,width,height);
+        //          board.showArrows(node,"up-right");
+        //          // console.log(value);
+        //        }
+         //
+        //     },board);
+        //   }
+        //   //south kichwa hole left
+        //   else if (x===0&&y===1) {
+        //     hole=board.getRawHole(x,y);
+        //     hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
+        //          //  var touches = event.getTouches();
+        //          // var touchLoc = touches[0].getLocation();
+        //       if(this.action===ACTIONS.SOW){
+        //          let node =event.target;
+        //          board.removeActiveHole();
+        //          board.setActiveHole(node)
+         //
+         //
+         //
+         //
+        //          let pos=node.getPosition();
+        //          let width=node.width;
+        //          let height=node.height;
+         //
+        //          board.setArrowsPos(pos,width,height);
+        //          board.showArrows(node,"down-left");
+        //          // console.log(value);
+        //        }
+         //
+        //     },board);
+        //   }
+        //   //south kichwa hole right
+        //   else if (x===7&&y===1) {
+        //     hole=board.getRawHole(x,y);
+        //     hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
+        //          //  var touches = event.getTouches();
+        //          // var touchLoc = touches[0].getLocation();
+        //         if(this.action===ACTIONS.SOW){
+        //          let node =event.target;
+        //          board.removeActiveHole();
+        //          board.setActiveHole(node)
+         //
+         //
+         //
+         //
+        //          let pos=node.getPosition();
+        //          let width=node.width;
+        //          let height=node.height;
+         //
+        //          board.setArrowsPos(pos,width,height);
+        //          board.showArrows(node,"down-right");
+        //          // console.log(value);
+        //        }
+         //
+        //     },board);
+        //   }
+        //   //north kichwa hole left
+        //   else if (x===0&&y===2) {
+        //     hole=board.getRawHole(x,y);
+        //     hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
+        //          //  var touches = event.getTouches();
+        //          // var touchLoc = touches[0].getLocation();
+        //         if(this.action===ACTIONS.SOW){
+        //          let node =event.target;
+        //          board.removeActiveHole();
+        //          board.setActiveHole(node)
+         //
+         //
+         //
+         //
+        //          let pos=node.getPosition();
+        //          let width=node.width;
+        //          let height=node.height;
+         //
+        //          board.setArrowsPos(pos,width,height);
+        //          board.showArrows(node,"up-left");
+        //          // console.log(value);
+        //        }
+         //
+        //     },board);
+        //   }
+        //   //north kichwa hole left
+        //   else if (x===7&&y===2) {
+        //     hole=board.getRawHole(x,y);
+        //     hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
+        //          //  var touches = event.getTouches();
+        //          // var touchLoc = touches[0].getLocation();
+        //       if(this.action===ACTIONS.SOW){
+        //          let node =event.target;
+        //          board.removeActiveHole();
+        //          board.setActiveHole(node)
+         //
+         //
+         //
+         //
+        //          let pos=node.getPosition();
+        //          let width=node.width;
+        //          let height=node.height;
+         //
+        //          board.setArrowsPos(pos,width,height);
+        //          board.showArrows(node,"up-right");
+        //          // console.log(value);
+        //        }
+         //
+        //     },board);
+        //   }
+        //   //first hole last row
+        //   else if (x===0&&y===3) {
+        //     hole=board.getRawHole(x,y);
+        //     hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
+        //          //  var touches = event.getTouches();
+        //          // var touchLoc = touches[0].getLocation();
+        //        if(this.action===ACTIONS.SOW){
+        //          let node =event.target;
+        //          board.removeActiveHole();
+        //          board.setActiveHole(node)
+         //
+         //
+         //
+         //
+        //          let pos=node.getPosition();
+        //          let width=node.width;
+        //          let height=node.height;
+         //
+        //          board.setArrowsPos(pos,width,height);
+        //          board.showArrows(node,"down-left");
+        //          // console.log(value);
+        //        }
+         //
+        //     },board);
+        //   }
+        //   //last hole last row
+        //   else if (x===7&&y===3) {
+        //     hole=board.getRawHole(x,y);
+        //     hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
+        //          //  var touches = event.getTouches();
+        //          // var touchLoc = touches[0].getLocation();
+        //        if(this.action===ACTIONS.SOW){
+        //          let node =event.target;
+        //          board.removeActiveHole();
+        //          board.setActiveHole(node)
+         //
+         //
+         //
+         //
+        //          let pos=node.getPosition();
+        //          let width=node.width;
+        //          let height=node.height;
+         //
+        //          board.setArrowsPos(pos,width,height);
+        //          board.showArrows(node,"down-right");
+        //          // console.log(value);
+        //        }
+         //
+        //     },board);
+        //   }
+        //   //holes not on edges
+        //  else
+         if(x>=0&&x<=7){
             hole=board.getRawHole(x,y);
             hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
                  //  var touches = event.getTouches();
@@ -254,7 +256,7 @@ cc.Class({
                 if(this.stage===NAMUA){
                   //namua stage logic here
                   if(this.isHolePlayable(hole)&&this.isFrontRow(hole)&&this.action===ACTIONS.PICK&&(this.canCapture(hole).state||(canCaptureList.length===0))){
-
+                        this.limitSide(false);
                     board.removeActiveHole();
                     board.setActiveHole(hole);
                     board.addKete(hole,this.pickOneFromStore());
@@ -265,6 +267,7 @@ cc.Class({
                           this.capture();
                           if(this.isKimbi(hole)||this.isKichwa(hole)){
                             //handle capture on kimbi/kichwa
+                            this.limitSide(true);
                             let holePos=board.getHolePos(hole);
                             let side=holePos.x>2?RIGHT:LEFT;
                             let kichwa =this.getKichwa(side);
@@ -275,9 +278,9 @@ cc.Class({
                             //normal capture select side
                             //this.setMode
                             let leftKichwa=board.getHoleComponent(this.getKichwa(LEFT))
-                            leftKichwa.showHighlight(cc.Color.GREEN);
+                            leftKichwa.highlighBlink(2,cc.Color.YELLOW);
                             let rightKichwa=board.getHoleComponent(this.getKichwa(RIGHT))
-                            rightKichwa.showHighlight(cc.Color.GREEN);
+                            rightKichwa.highlighBlink(2,cc.Color.YELLOW);
 
 
 
@@ -297,7 +300,17 @@ cc.Class({
 
 
 
-                  }else {
+                  }
+                  else if (this.isKichwa(hole)&&this.action===ACTIONS.SOW&&this.isSideLimited===false&&
+                         this.mode===NORMAL&&this.isFrontRow(hole)&&this.isMyHole(hole)&&this.inHand>0){
+                           this.setArrows(hole);
+                           board.showArrows(hole,"horizontal");
+
+
+                   console.log("kichwa hole");
+                  }
+
+                  else {
                   console.log("illegal hole")
                   }
 
@@ -424,6 +437,15 @@ cc.Class({
       //.addGameRule(()=>{console.log("another rule")})
 
 
+    },
+    limitSide(state){
+      this.isSideLimited=state;
+    },
+    isMyHole(hole,player=this.turn){
+      let board=this.getBoard();
+      let y =board.getHoleY(hole);
+      let owner=y>1?NORTH:SOUTH;
+      return owner===player;
     },
     setArrows(node){
 
