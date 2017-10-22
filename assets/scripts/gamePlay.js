@@ -94,9 +94,11 @@ cc.Class({
                             board.removeKete(hole,val);
                             this.setInHand(val);
                             this.setMode(MODES.TAKASA);
+                            let x=board.getHoleX(hole);
+                            let side=x===7?DIRECTION.RIGHT:DIRECTION.LEFT;
                             this.setArrows(hole);
-                            //TODO determine the allowed DIRECTION on the active hole
-                            board.showArrows(hole,DIRECTION.HORIZONTAL);
+                            let arrows=this.isKichwa(hole)?side:DIRECTION.HORIZONTAL;
+                            board.showArrows(hole,arrows);
                     }
                     this.setAction(ACTIONS.SOW)
 
