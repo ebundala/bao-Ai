@@ -95,6 +95,7 @@ cc.Class({
                             this.setInHand(val);
                             this.setMode(MODES.TAKASA);
                             this.setArrows(hole);
+                            //TODO determine the allowed DIRECTION on the active hole
                             board.showArrows(hole,DIRECTION.HORIZONTAL);
                     }
                     this.setAction(ACTIONS.SOW)
@@ -200,15 +201,14 @@ cc.Class({
           //sow TAKASA
           this.sow(this.inHand,hole,direction,this.turn);
         }else {
-          //sow normal
-          let x=board.getHolePos(this.activeKichwa)
-          let side=x.x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
-          //console.log("x of hole",side,x)
-          //debugger;
-          //if(this.turn===PLAYER.NORTH){
-          //side=board.invertDirection(side);
-        //  }
-          let kichwa=this.getKichwa(side);
+        ///  sow normal
+          let kichwa=this.activeKichwa;
+          if (this.isSideLimited) {
+          let x=board.getHoleX(hole)
+          let side=x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
+          kichwa=this.getKichwa(side);
+          }
+
           this.sow(this.inHand,kichwa,direction,this.turn,false,true);
         }
 

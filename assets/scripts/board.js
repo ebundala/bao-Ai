@@ -523,7 +523,7 @@ cc.Class({
       {
         this.activeHole=hole;
         let node=this.getHoleComponent(hole)
-        node.showHighlight(cc.Color.GREEN);
+        node.highlighBlink(3,cc.Color.ORANGE);
         return node;
       }
       return null;
