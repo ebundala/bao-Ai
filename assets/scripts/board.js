@@ -1,11 +1,9 @@
-//Todo remove initialization of board to gameplay logic
-//enable initialization of board from an array/data structure from gameplay logic;
-const NORTH=2;
-const SOUTH=1;
-const LEFT=1;
-const RIGHT=2;
-const UP=3;
-const DOWN=4;
+//TODO remove initialization of board to gameplay logic
+//TODO enable initialization of board from an array/data structure from gameplay logic;
+
+const PLAYER={NORTH:2,SOUTH:1}
+
+const DIRECTION={LEFT:1,RIGHT:2,UP:3,DOWN:4,HORIZONTAL:5,VERTICAL:6,DOWN_LEFT:7,DOWN_RIGHT:8,UP_LEFT:9,UP_RIGHT:10}
 cc.Class({
     extends: cc.Component,
 
@@ -70,7 +68,7 @@ cc.Class({
          type:cc.Node
        },
        gameRules:[],
-       direction:""
+       direction:0
     },
 
     // use this for initialization
@@ -236,10 +234,10 @@ cc.Class({
     },
     invertDirection(direction,commit=true){
       let dir=direction;
-      if(direction===LEFT||direction===RIGHT){
-      dir=direction===LEFT?RIGHT:LEFT;}
+      if(direction===DIRECTION.LEFT||direction===DIRECTION.RIGHT){
+      dir=direction===DIRECTION.LEFT?DIRECTION.RIGHT:DIRECTION.LEFT;}
       else {
-        dir=direction===UP?DOWN:UP;
+        dir=direction===DIRECTION.UP?DIRECTION.DOWN:DIRECTION.UP;
       }
       if(commit){
       this.setDirection(dir);
@@ -272,7 +270,7 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection(LEFT);
+      this.setDirection(DIRECTION.LEFT);
       console.log("LEFT")
 
       //hide arrows here
@@ -288,7 +286,7 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection(RIGHT);
+      this.setDirection(DIRECTION.RIGHT);
       console.log("RIGHT")
       //hide arrows here
       this.hideArrows();
@@ -301,7 +299,7 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection(UP);
+      this.setDirection(DIRECTION.UP);
       console.log("UP")
 
       //hide arrows here
@@ -315,7 +313,7 @@ cc.Class({
       {
       let node =event.target;
       //set direction here
-      this.setDirection(DOWN);
+      this.setDirection(DIRECTION.DOWN);
       console.log("DOWN")
 
       //hide arrows here
@@ -330,44 +328,44 @@ cc.Class({
 
         this.hideArrows();
     },
-    hideArrows(mode="all"){
+    hideArrows(mode=0){
 
 
       switch (mode) {
-        case "up-right":
+        case DIRECTION.UP_RIGHT:
         this.arrows.up.active=false;
         this.arrows.right.active=false;
           break;
-        case "up-left":
+        case DIRECTION.UP_LEFT:
         this.arrows.up.active=false;
         this.arrows.left.active=false;
           break;
-        case "down-right":
+        case DIRECTION.DOWN_RIGHT:
         this.arrows.down.active=false;
         this.arrows.right.active=false;
           break;
-        case "down-left":
+        case DIRECTION.DOWN_LEFT:
         this.arrows.down.active=false;
         this.arrows.left.active=false;
           break;
-        case "horizontal":
+        case DIRECTION.HORIZONTAL:
         this.arrows.left.active=false;
         this.arrows.right.active=false;
           break;
-        case "vertical":
+        case DIRECTION.VERTICAL:
         this.arrows.up.active=false;
         this.arrows.down.active=false;
           break;
-        case "left":
+        case DIRECTION.LEFT:
         this.arrows.left.active=false;
          break;
-        case "right":
+        case DIRECTION.RIGHT:
         this.arrows.right.active=false;
          break;
-        case "up":
+        case DIRECTION.UP:
         this.arrows.up.active=false;
         break;
-        case "down":
+        case DIRECTION.DOWN:
         this.arrows.down.active=false;
         break;
         default:
@@ -378,82 +376,69 @@ cc.Class({
       }
 
     },
-    showArrows(node,mode="all"){
+    showArrows(node,mode=0){
 
 
       switch (mode) {
-        case "up-right":
+        case DIRECTION.UP_RIGHT:
         this.arrows.up.active=true;
         this.arrows.right.active=true;
         this.arrows.left.active=false;
-        this.arrows.down.active=false;
-          break;
-        case "up-left":
-        this.arrows.up.active=true;
-        this.arrows.left.active=true;
-
-        this.arrows.right.active=false;
-
-        this.arrows.down.active=false;
-
-        break;
-        case "down-right":
-        this.arrows.down.active=true;
-        this.arrows.right.active=true;
-        this.arrows.left.active=false;
-
-        this.arrows.up.active=false;
-
-          break;
-        case "down-left":
-        this.arrows.down.active=true;
-        this.arrows.left.active=true;
-
-        this.arrows.right.active=false;
-        this.arrows.up.active=false;
-
-          break;
-        case "horizontal":
-        this.arrows.left.active=true;
-        this.arrows.right.active=true;
-
-        this.arrows.up.active=false;
-        this.arrows.down.active=false;
-          break;
-        case "vertical":
-        this.arrows.up.active=true;
-        this.arrows.down.active=true;
-        this.arrows.left.active=false;
-        this.arrows.right.active=false;
-
-          break;
-        case "left":
-        this.arrows.left.active=true;
-
-        this.arrows.right.active=false;
-        this.arrows.up.active=false;
-        this.arrows.down.active=false;
-         break;
-        case "right":
-        this.arrows.right.active=true;
-        this.arrows.left.active=false;
-
-        this.arrows.up.active=false;
-        this.arrows.down.active=false;
-         break;
-        case "up":
-        this.arrows.up.active=true;
-        this.arrows.left.active=false;
-        this.arrows.right.active=false;
-
         this.arrows.down.active=false;
         break;
-        case "down":
+        case DIRECTION.UP_LEFT:
+        this.arrows.up.active=true;
+        this.arrows.left.active=true;
+        this.arrows.right.active=false;
+        this.arrows.down.active=false;
+        break;
+        case DIRECTION.DOWN_RIGHT:
+        this.arrows.down.active=true;
+        this.arrows.right.active=true;
+        this.arrows.left.active=false;
+        this.arrows.up.active=false;
+        break;
+        case DIRECTION.DOWN_LEFT:
+        this.arrows.down.active=true;
+        this.arrows.left.active=true;
+        this.arrows.right.active=false;
+        this.arrows.up.active=false;
+        break;
+        case DIRECTION.HORIZONTAL:
+        this.arrows.left.active=true;
+        this.arrows.right.active=true;
+        this.arrows.up.active=false;
+        this.arrows.down.active=false;
+        break;
+        case DIRECTION.VERTICAL:
+        this.arrows.up.active=true;
+        this.arrows.down.active=true;
+        this.arrows.left.active=false;
+        this.arrows.right.active=false;
+        break;
+        case DIRECTION.LEFT:
+        this.arrows.left.active=true;
+        this.arrows.right.active=false;
+        this.arrows.up.active=false;
+        this.arrows.down.active=false;
+        break;
+        case DIRECTION.RIGHT:
+        this.arrows.right.active=true;
+        this.arrows.left.active=false;
+        this.arrows.up.active=false;
+        this.arrows.down.active=false;
+        break;
+        case DIRECTION.UP:
+        this.arrows.up.active=true;
+        this.arrows.left.active=false;
+        this.arrows.right.active=false;
+        this.arrows.down.active=false;
+        break;
+        case DIRECTION.DOWN:
         this.arrows.down.active=true;
         this.arrows.left.active=false;
         this.arrows.right.active=false;
         this.arrows.up.active=false;
-
         break;
         default:
         this.arrows.left.active=true;
@@ -467,52 +452,53 @@ cc.Class({
 
 
      //hole manipulators
-    sow(kete,startHole,direction,player,test=false){
+    sow(kete,startHole,direction,player,test=false,inplace=false){
       let holePos=this.getHolePos(startHole);
+      console.log(holePos);
          while(kete>0){
-
-
-               if(player===SOUTH)
+           if(!test&&inplace){
+             this.getHole(holePos.x,holePos.y).addKete(1);
+            }
+               if(player===PLAYER.SOUTH)
               {
-                if (direction===LEFT)
+                if (direction===DIRECTION.LEFT)
                  {
                    if(holePos.x===0){
                      holePos.y>0?holePos.y--:holePos.y++;
-                     direction=RIGHT;
-                   }else{
-                  holePos.x--;
-                }
+                     direction=DIRECTION.RIGHT;
+                    }else{
+                      holePos.x--;
+                    }
 
-              }else { //right direction
+                }else { //right direction
                   if(holePos.x===7){
-                    direction=LEFT;
+                    direction=DIRECTION.LEFT;
                     holePos.y>0?holePos.y--:holePos.y++;
                   }else{
                     holePos.x++;
                   }
 
                 }
-                }
-                else if(player===NORTH) //north player logic
+              }
+              else if(player===PLAYER.NORTH) //north player logic
                 {
 
-                  if (direction===LEFT)
+                  if (direction===DIRECTION.LEFT)
                    {
                      if(holePos.x===7){
-                      holePos.y>2?holePos.y--:holePos.y++;
-                       direction=RIGHT;
+                        holePos.y>2?holePos.y--:holePos.y++;
+                        direction=DIRECTION.RIGHT;
                      }else{
-                    holePos.x++;
-                  }
+                      holePos.x++;
+                      }
 
-                }else { //right direction
-                    if(holePos.x===0){
-                      direction=LEFT;
+                    }else { //right direction
+                     if(holePos.x===0){
+                      direction=DIRECTION.LEFT;
                       holePos.y>2?holePos.y--:holePos.y++;
-                    }else{
-                      holePos.x--;
-                    }
-
+                      }else{
+                        holePos.x--;
+                      }
                   }
 
                 }
@@ -525,9 +511,10 @@ cc.Class({
                   kete--;
                 }
                 //console.log(direction+" x y ",holePos.x+" ",holePos.y);
-                if(!test)
-                this.getHole(holePos.x,holePos.y).addKete(1);
 
+          if(!test&&!inplace){
+          this.getHole(holePos.x,holePos.y).addKete(1);
+          }
          }
          return holePos;
     },
@@ -582,7 +569,7 @@ cc.Class({
         return hole.getComponent("boardNode").bName;
     },
     getHoleX(hole){
-        return hole.getComponent("boardNode").nodeY;
+        return hole.getComponent("boardNode").nodeX;
     },
     getHoleY(hole){
         return hole.getComponent("boardNode").nodeY;
