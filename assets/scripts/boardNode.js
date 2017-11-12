@@ -59,7 +59,9 @@ cc.Class({
       this.scheduleOnce(this.hideHighlight.bind(this),t)
       return this;
     },
-
+    getPos(){
+      return cc.p(this.nodeX,this.nodeY);
+    },
 
     // use this for initialization
     onLoad: function () {

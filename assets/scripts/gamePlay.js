@@ -4,6 +4,7 @@ const STAGE={NAMUA:1,MTAJI:2}
 const MODES={NORMAL:1,TAKASA:2}
 const ACTIONS={PICK:1,SOW:2,SLEEP:3,CAPTURE:4,TAKASA:5}
 const DIRECTION={LEFT:1,RIGHT:2,UP:3,DOWN:4,HORIZONTAL:5,VERTICAL:6,DOWN_LEFT:7,DOWN_RIGHT:8,UP_LEFT:9,UP_RIGHT:10}
+const BOARD_STATE={NORMAL:1,TAKASA:2,CAPTURING:3}
 
 
 cc.Class({
@@ -31,9 +32,13 @@ cc.Class({
 
     // use this for initialization
     onLoad: function () {
+      //  cc.director.getCollitionsManager().enabled = true;
+        cc.director.getPhysicsManager().enabled = true;
+        cc.director.getPhysicsManager().gravity=cc.p(0,0);
      //initialize board layout here
       this.getBoard().defaultBaoBoardLayout();
-      this.getBoard().initBaoBoardState();
+      this.getBoard().initBaoBoardState(BOARD_STATE.NORMAL);
+      //this.turn=PLAYER.NORTH;
       this.getBoard().addArrows();
       let board=this.getBoard();
       this.stage=STAGE.NAMUA;
@@ -49,6 +54,11 @@ cc.Class({
 
          if(x>=0&&x<=7){
             hole=board.getRawHole(x,y);
+              //hole.on(cc.Node.EventType.TOUCH_START,(event)=>{
+                //  var touches = event.getTouches();
+                // var touchLoc = touches[0].getLocation();
+              //  console.log("start");
+              //});
             hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
                  //  var touches = event.getTouches();
                  // var touchLoc = touches[0].getLocation();
@@ -77,15 +87,10 @@ cc.Class({
 
                           }else {
                             //normal capture select side
-                            //this.setMode
                             let leftKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.LEFT))
                             leftKichwa.highlighBlink(2,cc.Color.YELLOW);
                             let rightKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.RIGHT))
                             rightKichwa.highlighBlink(2,cc.Color.YELLOW);
-
-
-
-
                           }
 
                     }else {
@@ -114,11 +119,12 @@ cc.Class({
                            this.activeKichwa=hole;
 
 
-                   console.log("kichwa hole ",x);
+                   //console.log("kichwa hole ",x);
                   }
 
                   else {
-                  console.log("illegal hole")
+                    board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
+                  //console.log("illegal hole")
                   }
 
 
@@ -201,7 +207,24 @@ cc.Class({
 
         if (this.mode===MODES.TAKASA) {
           //sow TAKASA
-          this.sow(this.inHand,hole,direction,this.turn);
+          let currentHole=hole;
+           // debugger;
+          do {
+
+          currentHole=this.sow(this.inHand,currentHole,direction,this.turn);
+           this.clearInHand();
+
+
+           let val=board.getHoleValue(currentHole);
+
+           if(val>1){
+             this.setInHand(val);
+             board.removeKete(currentHole,val)
+           }
+          }
+          while (this.inHand>1);
+
+
         }else {
         ///  sow normal
           let kichwa=this.activeKichwa;
@@ -210,8 +233,25 @@ cc.Class({
           let side=x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
           kichwa=this.getKichwa(side);
           }
+          let currentHole=kichwa;
+          do {
+          //  debugger;
+          currentHole=this.sow(this.inHand,currentHole,direction,this.turn,false,true);
+            this.clearInHand();
+             console.log("hole val n",board.getHoleValue(currentHole));
+          if(this.canCapture(currentHole)){
 
-          this.sow(this.inHand,kichwa,direction,this.turn,false,true);
+            this.capture(currentHole);
+
+            break;
+          }else {
+            console.log("set in hand n");
+            this.setInHand(board.getHoleValue(currentHole))
+          }
+
+          }
+          while (this.inHand>1);
+          //this.sow(this.inHand,kichwa,direction,this.turn,false,true);
         }
 
         this.changeTurn();
@@ -510,15 +550,17 @@ cc.Class({
           //console.log(pos);
           return pos;
     },
-
      //sow function overide
-     sow(kete,startHole,direction,player=this.turn,test=false,inplace=false){
+    sow(kete,startHole,direction,player=this.turn,test=false,inplace=false){
        let board=this.getBoard();
        let holePos=board.getHolePos(startHole);
-       console.log(holePos);
+       let hole;
+       //console.log(holePos);
+      //debugger;
           while(kete>0){
             if(!test&&inplace){
-              board.getHole(holePos.x,holePos.y).addKete(1);
+            hole= board.getHole(holePos.x,holePos.y).addKete(1);
+
              }
                 if(player===PLAYER.SOUTH)
                {
@@ -568,27 +610,25 @@ cc.Class({
                  }else{
                    kete--;
                  }
+
                  //console.log(direction+" x y ",holePos.x+" ",holePos.y);
 
            if(!test&&!inplace){
-           board.getHole(holePos.x,holePos.y).addKete(1);
+           hole= board.getHole(holePos.x,holePos.y).addKete(1);
            }
           }
-          return holePos;
+     //console.log(holePos);
+         holePos=hole.getPos();
+          return board.getRawHole(holePos.x,holePos.y);
      },
-
 
     // called every frame, uncomment this function to activate update callback
     update: function (dt) {
       let hole=this.getBoard().getActiveHole();
       let pos=hole?this.getBoard().getHolePos(hole):{x:0,y:0};
-      let turn=this.turn>1?"Opponent":"Your\'s"
-      this.getBoard().setDisplayInfo("Turn:"+turn+" Hole: "+pos.x+","+pos.y+" \nInhand: "+this.inHand)
+      let turn=this.turn>1?"Oppo":"Your\'s"
+      this.getBoard().setDisplayInfo("Turn:"+turn+" Hole: "+pos.x+","+pos.y+" Inhand: "+this.inHand)
      },
-
-
-
-
 
 });
 

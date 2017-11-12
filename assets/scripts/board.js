@@ -2,8 +2,8 @@
 //TODO enable initialization of board from an array/data structure from gameplay logic;
 
 const PLAYER={NORTH:2,SOUTH:1}
-
 const DIRECTION={LEFT:1,RIGHT:2,UP:3,DOWN:4,HORIZONTAL:5,VERTICAL:6,DOWN_LEFT:7,DOWN_RIGHT:8,UP_LEFT:9,UP_RIGHT:10}
+const BOARD_STATE={NORMAL:1,TAKASA:2,CAPTURING:3}
 cc.Class({
     extends: cc.Component,
 
@@ -149,37 +149,84 @@ cc.Class({
       }
        //this.addTouchToStores();
     },
-    initBaoBoardState(){
+    initBaoBoardState(state=BOARD_STATE.NORMAL){
       // populate initial state of the board
 
-          //normal holes
-           this.getHole(1,2).addKete(2);
-          this.getHole(2,2).addKete(2);
-           this.getHole(5,1).addKete(2);
-           this.getHole(6,1).addKete(2);
-          //nyumba holes
-         this.getHole(4,1).addKete(6);
-          this.getHole(4,1).setHoleName("south-nyumba");
-          this.getHole(3,2).addKete(6);
-          this.getHole(3,2).setHoleName("north-nyumba");
+            if(state===BOARD_STATE.NORMAL)
+            {
+              //normal holes
+              this.getHole(1,2).addKete(2);
+              this.getHole(2,2).addKete(2);
+              this.getHole(5,1).addKete(2);
+              this.getHole(6,1).addKete(2);
+              //nyumba holes
+              this.getHole(4,1).addKete(6);
+              this.getHole(4,1).setHoleName("south-nyumba");
+              this.getHole(3,2).addKete(6);
+              this.getHole(3,2).setHoleName("north-nyumba");
 
-          //stores holes;
-          this.getHole(0,4).addKete(22);
-          this.getHole(0,4).setHoleName("south-store");
-          this.getHole(1,4).addKete(22);
-          this.getHole(1,4).setHoleName("north-store");
+              //stores holes;
+              this.getHole(0,4).addKete(22);
+              this.getHole(0,4).setHoleName("south-store");
+              this.getHole(1,4).addKete(22);
+              this.getHole(1,4).setHoleName("north-store");
 
 
-          //kimbi and kichwa
-            this.getHole(0,1).setHoleName("kichwa-l");
-            this.getHole(0,2).setHoleName("kichwa-l");
-            this.getHole(7,1).setHoleName("kichwa-r");
-            this.getHole(7,2).setHoleName("kichwa-r");
+              //kimbi and kichwa
+              this.getHole(0,1).setHoleName("kichwa-l");
+              this.getHole(0,2).setHoleName("kichwa-l");
+              this.getHole(7,1).setHoleName("kichwa-r");
+              this.getHole(7,2).setHoleName("kichwa-r");
 
-            this.getHole(1,1).setHoleName("kimbi-l");
-            this.getHole(1,2).setHoleName("kimbi-l");
-            this.getHole(6,1).setHoleName("kimbi-r");
-            this.getHole(6,2).setHoleName("kimbi-r");
+              this.getHole(1,1).setHoleName("kimbi-l");
+              this.getHole(1,2).setHoleName("kimbi-l");
+              this.getHole(6,1).setHoleName("kimbi-r");
+              this.getHole(6,2).setHoleName("kimbi-r");
+            }
+            else if(state===BOARD_STATE.TAKASA) {
+              let i=0,j=0;
+
+                for (j = 1;j < 2;j++) {
+                  for (i = 0; i < 8; i++) {
+                    this.getHole(i,j).addKete(2);
+                }
+              }
+            }
+            else if (state===BOARD_STATE.CAPTURING) {
+              let i=0,j=0;
+
+                for (j = 1;j < 3;j++) {
+                  for (i = 0; i < 8; i++) {
+                    this.getHole(i,j).addKete(2);
+                }
+              }
+
+
+
+            }
+            else {
+              this.getHole(0,4).addKete(19);
+              this.getHole(0,4).setHoleName("south-store");
+              this.getHole(1,4).addKete(20);
+              this.getHole(1,4).setHoleName("north-store");
+
+              //holes
+              this.getHole(0,1).addKete(1);
+              this.getHole(1,1).addKete(3);
+              this.getHole(3,1).addKete(1);
+              this.getHole(4,1).addKete(8);
+              this.getHole(0,2).addKete(2);
+              this.getHole(2,2).addKete(3);
+              this.getHole(3,2).addKete(7);
+            }
+
+
+
+
+
+
+
+
             return this;
     },
     addTouchToStores(){
@@ -569,14 +616,14 @@ cc.Class({
         return hole.getComponent("boardNode").bName;
     },
     getHoleX(hole){
-        return hole.getComponent("boardNode").nodeX;
+        return hole.getComponent("boardNode").getPos().x;
     },
     getHoleY(hole){
-        return hole.getComponent("boardNode").nodeY;
+        return hole.getComponent("boardNode").getPos().y;
     },
     getHolePos(hole){
-      let holeNode= hole.getComponent("boardNode");
-      return {y:holeNode.nodeY,x:holeNode.nodeX,};
+      return hole.getComponent("boardNode").getPos();
+
 
     },
     getHoleInfo(hole){
