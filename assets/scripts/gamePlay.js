@@ -5,8 +5,30 @@ const MODES={NORMAL:1,TAKASA:2}
 const ACTIONS={PICK:1,SOW:2,SLEEP:3,CAPTURE:4,TAKASA:5}
 const DIRECTION={LEFT:1,RIGHT:2,UP:3,DOWN:4,HORIZONTAL:5,VERTICAL:6,DOWN_LEFT:7,DOWN_RIGHT:8,UP_LEFT:9,UP_RIGHT:10}
 const BOARD_STATE={NORMAL:1,TAKASA:2,CAPTURING:3}
+const DEEPQ={INPUTS:35,ACTIONS:34,TEMPORAL_WINDOW:5}
+const NET_SIZE=DEEPQ.INPUTS*DEEPQ.TEMPORAL_WINDOW+DEEPQ.ACTIONS*DEEPQ.TEMPORAL_WINDOW+DEEPQ.INPUTS;
+let layer_defs=[];
+layer_defs.push({type:'input',out_sx:1,out_sy:1,out_depth:NET_SIZE});
+layer_defs.push({type:'fc',num_neurons:100,activation:'relu'});
+layer_defs.push({type:'fc',num_neurons:100,activation:'relu'});
+layer_defs.push({type:'fc',num_neurons:100,activation:'relu'});
+layer_defs.push({type:'regression',num_neurons:DEEPQ.ACTIONS});
+let tdtrainer_options={learning_rate:0.001,momentum:0.0,batch_size:128,l2_decay:0.01};
+let opt={};
+opt.temporal_window=DEEPQ.TEMPORAL_WINDOW;
+opt.experience_size=5000;
+opt.start_learn_threshold=1000
+opt.gamma=0.8;
+opt.learning_steps_total=50000;
+opt.learning_steps_burnin=50000
+opt.epsilon_min=0.05
+opt.epsilon_test_time=0.05
+opt.layer_defs=layer_defs;
+opt.tdtrainer_options=tdtrainer_options;
 
 
+
+var deepqlearn=require("deepqlearn")
 cc.Class({
     extends: cc.Component,
 
@@ -16,6 +38,7 @@ cc.Class({
         type:cc.Node
       },
       turn:1,
+      brain:{default:null,type:cc.Node},
       stage:STAGE.NAMUA,
       mode:MODES.NORMAL,
       isSideLimited:false,
@@ -32,6 +55,9 @@ cc.Class({
 
     // use this for initialization
     onLoad: function () {
+
+      this.brain=new deepqlearn.Brain(DEEPQ.INPUTS,DEEPQ.ACTIONS,opt),
+      //  cc.log(this.brain);
       //  cc.director.getCollitionsManager().enabled = true;
         cc.director.getPhysicsManager().enabled = true;
         cc.director.getPhysicsManager().gravity=cc.p(0,0);
