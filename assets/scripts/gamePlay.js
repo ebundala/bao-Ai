@@ -5,7 +5,7 @@ const MODES={NORMAL:1,TAKASA:2}
 const ACTIONS={PICK:1,SOW:2,SLEEP:3,CAPTURE:4,TAKASA:5}
 const DIRECTION={LEFT:1,RIGHT:2,UP:3,DOWN:4,HORIZONTAL:5,VERTICAL:6,DOWN_LEFT:7,DOWN_RIGHT:8,UP_LEFT:9,UP_RIGHT:10}
 const BOARD_STATE={NORMAL:1,TAKASA:2,CAPTURING:3}
-const DEEPQ={INPUTS:35,ACTIONS:34,TEMPORAL_WINDOW:5}
+const DEEPQ={INPUTS:40,ACTIONS:64,TEMPORAL_WINDOW:5}
 const NET_SIZE=DEEPQ.INPUTS*DEEPQ.TEMPORAL_WINDOW+DEEPQ.ACTIONS*DEEPQ.TEMPORAL_WINDOW+DEEPQ.INPUTS;
 let layer_defs=[];
 layer_defs.push({type:'input',out_sx:1,out_sy:1,out_depth:NET_SIZE});
@@ -52,7 +52,189 @@ cc.Class({
     getBoard(){
       return this.board.getComponent("board");
     },
+    //AI
+    computeHolePosition(action){
 
+      let y=action>7?Math.floor(action/8):0;
+      let x=action>7?Math.floor(action%8):action;
+
+     return cc.v2(x,y);
+   },
+    getBoardState(){
+      let board=this.getBoard();
+
+      let state=[];
+      for(let y=0;y<5;y++){
+        for(let x=0;x<8;x++){
+          if(!(x>1&&y>3)){
+            state.push(board.getHole(x,y).value);
+          }
+          else {
+            state.push(board.holeslist[y][x]||0)
+          }
+
+        }
+      }
+      return state;
+    },
+
+    handleHole(hole){
+      let board=this.getBoard();
+      let canCaptureList=this.getCanCaptureList();
+      let reward=0;
+      if(this.stage===STAGE.NAMUA){
+        //namua stage logic here
+        if(this.isHolePlayable(hole)&&this.isFrontRow(hole)&&this.action===ACTIONS.PICK&&(this.canCapture(hole).state||(canCaptureList.length===0))){
+              this.limitSide(false);
+          board.removeActiveHole();
+          board.setActiveHole(hole);
+          board.addKete(hole,this.pickOneFromStore());
+          reward++;
+          if(this.canCapture(hole).state)
+          {
+
+            this.setMode(MODES.NORMAL);
+            reward=reward+this.capture();
+            if(this.isKimbi(hole)||this.isKichwa(hole)){
+              //handle capture on kimbi/kichwa
+              this.limitSide(true);
+              let holePos=board.getHolePos(hole);
+              let side=holePos.x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
+              let kichwa =this.getKichwa(side);
+              this.setArrows(kichwa);
+              board.showArrows(kichwa,side);
+              //TODO handle ai capture on kimbi
+
+            }else {
+              //normal capture select side
+              let leftKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.LEFT))
+              leftKichwa.highlighBlink(2,cc.Color.YELLOW);
+              let rightKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.RIGHT))
+              rightKichwa.highlighBlink(2,cc.Color.YELLOW);
+            }
+
+          }else {
+            //Takasa mode logic
+            let val=board.getHoleValue(hole);
+            board.removeKete(hole,val);
+            this.setInHand(val);
+            this.setMode(MODES.TAKASA);
+            let x=board.getHoleX(hole);
+            let side=x===7?DIRECTION.RIGHT:DIRECTION.LEFT;
+            this.setArrows(hole);
+            let arrows=this.isKichwa(hole)?side:DIRECTION.HORIZONTAL;
+            board.showArrows(hole,arrows);
+          }
+          this.setAction(ACTIONS.SOW)
+
+
+
+        }
+        else if (this.isKichwa(hole)&&this.action===ACTIONS.SOW&&this.isSideLimited===false&&
+        this.mode===MODES.NORMAL&&this.isFrontRow(hole)&&this.isMyHole(hole)&&this.inHand>0){
+          let x=board.getHoleX(hole);
+          let side=x===7?DIRECTION.RIGHT:DIRECTION.LEFT;
+          this.setArrows(hole);
+          board.showArrows(hole,side);
+          this.activeKichwa=hole;
+          reward++;
+
+
+          //console.log("kichwa hole ",x);
+        }
+
+        else {
+          board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
+          reward--;
+          //console.log("illegal hole")
+        }
+
+
+
+
+     }
+     else {
+       //mtaji logic here
+     }
+
+     return reward;
+    },
+    handleMove(){
+
+      let board=this.getBoard();
+      let hole=board.getActiveHole();
+      let holeNode=board.getHoleComponent(hole);
+      let reward=0;
+
+      if (this.action===ACTIONS.SOW&&this.stage===STAGE.NAMUA) {
+
+        let direction=board.getDirection();
+        //  if(this.turn===PLAYER.NORTH){
+        //  direction=board.invertDirection(direction)
+        //  }
+
+        if (this.mode===MODES.TAKASA) {
+          //sow TAKASA
+          let currentHole=hole;
+          // debugger;
+          do {
+
+            currentHole=this.sow(this.inHand,currentHole,direction,this.turn);
+
+            this.clearInHand();
+
+
+            let val=board.getHoleValue(currentHole);
+
+            if(val>1){
+              this.setInHand(val);
+              board.removeKete(currentHole,val)
+            }
+          }
+          while (this.inHand>1);
+
+
+        }else {
+          ///  sow normal
+          let kichwa=this.activeKichwa;
+          if (this.isSideLimited) {
+            let x=board.getHoleX(hole)
+            let side=x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
+            kichwa=this.getKichwa(side);
+          }
+          let currentHole=kichwa;
+          do {
+            //  debugger;
+            currentHole=this.sow(this.inHand,currentHole,direction,this.turn,false,true);
+
+            this.clearInHand();
+            console.log("hole val n",board.getHoleValue(currentHole));
+            if(this.canCapture(currentHole)){
+
+              reward+= this.capture(currentHole);
+             //TODO handle capturing for ai
+              break;
+            }else {
+              console.log("set in hand n");
+              this.setInHand(board.getHoleValue(currentHole))
+            }
+
+          }
+          while (this.inHand>1);
+          //this.sow(this.inHand,kichwa,direction,this.turn,false,true);
+
+        }
+
+
+        this.setMode(MODES.NORMAL);
+        this.setAction(ACTIONS.PICK)
+        this.changeTurn();
+
+
+       return reward;
+      }
+
+    },
     // use this for initialization
     onLoad: function () {
 
@@ -80,86 +262,13 @@ cc.Class({
 
          if(x>=0&&x<=7){
             hole=board.getRawHole(x,y);
-              //hole.on(cc.Node.EventType.TOUCH_START,(event)=>{
-                //  var touches = event.getTouches();
-                // var touchLoc = touches[0].getLocation();
-              //  console.log("start");
-              //});
+
             hole.on(cc.Node.EventType.TOUCH_END,(event)=>{
                  //  var touches = event.getTouches();
                  // var touchLoc = touches[0].getLocation();
                 let hole =event.target;
-                let canCaptureList=this.getCanCaptureList();
-                if(this.stage===STAGE.NAMUA){
-                  //namua stage logic here
-                  if(this.isHolePlayable(hole)&&this.isFrontRow(hole)&&this.action===ACTIONS.PICK&&(this.canCapture(hole).state||(canCaptureList.length===0))){
-                        this.limitSide(false);
-                    board.removeActiveHole();
-                    board.setActiveHole(hole);
-                    board.addKete(hole,this.pickOneFromStore());
-                    if(this.canCapture(hole).state)
-                    {
+              this.handleHole(hole);
 
-                          this.setMode(MODES.NORMAL);
-                          this.capture();
-                          if(this.isKimbi(hole)||this.isKichwa(hole)){
-                            //handle capture on kimbi/kichwa
-                            this.limitSide(true);
-                            let holePos=board.getHolePos(hole);
-                            let side=holePos.x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
-                            let kichwa =this.getKichwa(side);
-                            this.setArrows(kichwa);
-                            board.showArrows(kichwa,side);
-
-                          }else {
-                            //normal capture select side
-                            let leftKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.LEFT))
-                            leftKichwa.highlighBlink(2,cc.Color.YELLOW);
-                            let rightKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.RIGHT))
-                            rightKichwa.highlighBlink(2,cc.Color.YELLOW);
-                          }
-
-                    }else {
-                            //Takasa mode logic
-                            let val=board.getHoleValue(hole);
-                            board.removeKete(hole,val);
-                            this.setInHand(val);
-                            this.setMode(MODES.TAKASA);
-                            let x=board.getHoleX(hole);
-                            let side=x===7?DIRECTION.RIGHT:DIRECTION.LEFT;
-                            this.setArrows(hole);
-                            let arrows=this.isKichwa(hole)?side:DIRECTION.HORIZONTAL;
-                            board.showArrows(hole,arrows);
-                    }
-                    this.setAction(ACTIONS.SOW)
-
-
-
-                  }
-                  else if (this.isKichwa(hole)&&this.action===ACTIONS.SOW&&this.isSideLimited===false&&
-                         this.mode===MODES.NORMAL&&this.isFrontRow(hole)&&this.isMyHole(hole)&&this.inHand>0){
-                           let x=board.getHoleX(hole);
-                           let side=x===7?DIRECTION.RIGHT:DIRECTION.LEFT;
-                           this.setArrows(hole);
-                           board.showArrows(hole,side);
-                           this.activeKichwa=hole;
-
-
-                   //console.log("kichwa hole ",x);
-                  }
-
-                  else {
-                    board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
-                  //console.log("illegal hole")
-                  }
-
-
-
-
-               }
-               else {
-                 //mtaji logic here
-               }
 
             },board);
           }
@@ -213,80 +322,12 @@ cc.Class({
 
       }
 
-
-
-
-
       //add gameplay logic here
       this.getBoard().addGameRule(()=>{
 
-        //var board=this.getBoard();
-        let hole=board.getActiveHole();
-        let holeNode=board.getHoleComponent(hole);
-
-        if (this.action===ACTIONS.SOW&&this.stage===STAGE.NAMUA) {
-
-          let direction=board.getDirection();
-        //  if(this.turn===PLAYER.NORTH){
-        //  direction=board.invertDirection(direction)
-        //  }
-
-        if (this.mode===MODES.TAKASA) {
-          //sow TAKASA
-          let currentHole=hole;
-           // debugger;
-          do {
-
-          currentHole=this.sow(this.inHand,currentHole,direction,this.turn);
-           this.clearInHand();
 
 
-           let val=board.getHoleValue(currentHole);
-
-           if(val>1){
-             this.setInHand(val);
-             board.removeKete(currentHole,val)
-           }
-          }
-          while (this.inHand>1);
-
-
-        }else {
-        ///  sow normal
-          let kichwa=this.activeKichwa;
-          if (this.isSideLimited) {
-          let x=board.getHoleX(hole)
-          let side=x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
-          kichwa=this.getKichwa(side);
-          }
-          let currentHole=kichwa;
-          do {
-          //  debugger;
-          currentHole=this.sow(this.inHand,currentHole,direction,this.turn,false,true);
-            this.clearInHand();
-             console.log("hole val n",board.getHoleValue(currentHole));
-          if(this.canCapture(currentHole)){
-
-            this.capture(currentHole);
-
-            break;
-          }else {
-            console.log("set in hand n");
-            this.setInHand(board.getHoleValue(currentHole))
-          }
-
-          }
-          while (this.inHand>1);
-          //this.sow(this.inHand,kichwa,direction,this.turn,false,true);
-        }
-
-        this.changeTurn();
-        this.setMode(MODES.NORMAL);
-        this.setAction(ACTIONS.PICK)
-
-        }
-
-
+          this.handleMove();
 
 
       })
@@ -383,6 +424,7 @@ cc.Class({
       let oValue=board.getHoleValue(oHole);
       board.removeKete(oHole,oValue);
       this.setInHand(oValue);
+      return oValue;
     },
     getNyumba(player=this.turn){
         let board=this.getBoard();
@@ -437,6 +479,38 @@ cc.Class({
     },
     changeTurn(){
       this.turn=this.turn==PLAYER.NORTH?PLAYER.SOUTH:PLAYER.NORTH;
+
+      if(this.turn===PLAYER.NORTH){
+        let state=this.getBoardState();
+        let board=this.getBoard();
+        let reward=0
+        let actionDirection;
+        let action;
+        let pos;
+        let hole;
+        let direction;
+        do {
+          actionDirection=this.brain.forward(state);
+          //debugger;
+          action=actionDirection>32?actionDirection-32:actionDirection;
+          direction =actionDirection>32?DIRECTION.RIGHT:DIRECTION.LEFT;
+          pos=this.computeHolePosition(action);
+
+          hole =board.getRawHole(pos.x,pos.y);
+          board.setDirection(direction);
+          reward=this.handleHole(hole)
+
+              if(reward>0){
+                //debugger
+              //reward=reward+this.handleMove()
+              }
+           cc.log(action,pos,reward);
+          this.brain.backward(reward);
+         }
+      while (reward<1)
+
+
+      }
     },
     isHolePlayable(hole,turn=this.turn,stage=this.stage){
       let y= this.getBoard().getHoleY(hole);
