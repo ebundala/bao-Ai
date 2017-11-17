@@ -5,6 +5,7 @@ const MODES={NORMAL:1,TAKASA:2}
 const ACTIONS={PICK:1,SOW:2,SLEEP:3,CAPTURE:4,TAKASA:5}
 const DIRECTION={LEFT:1,RIGHT:2,UP:3,DOWN:4,HORIZONTAL:5,VERTICAL:6,DOWN_LEFT:7,DOWN_RIGHT:8,UP_LEFT:9,UP_RIGHT:10}
 const BOARD_STATE={NORMAL:1,TAKASA:2,CAPTURING:3}
+//neural net parameters
 const DEEPQ={INPUTS:40,ACTIONS:64,TEMPORAL_WINDOW:5}
 const NET_SIZE=DEEPQ.INPUTS*DEEPQ.TEMPORAL_WINDOW+DEEPQ.ACTIONS*DEEPQ.TEMPORAL_WINDOW+DEEPQ.INPUTS;
 let layer_defs=[];
@@ -87,14 +88,15 @@ cc.Class({
         if(this.isHolePlayable(hole)&&this.isFrontRow(hole)&&this.action===ACTIONS.PICK&&(this.canCapture(hole).state||(canCaptureList.length===0))){
               this.limitSide(false);
           board.removeActiveHole();
+          //debugger
           board.setActiveHole(hole);
           board.addKete(hole,this.pickOneFromStore());
           reward++;
           if(this.canCapture(hole).state)
           {
 
-            this.setMode(MODES.NORMAL);
-            reward=reward+this.capture();
+          this.setMode(MODES.NORMAL);
+          reward=reward+this.capture();
             if(this.isKimbi(hole)||this.isKichwa(hole)){
               //handle capture on kimbi/kichwa
               this.limitSide(true);
@@ -105,12 +107,12 @@ cc.Class({
               board.showArrows(kichwa,side);
               //TODO handle ai capture on kimbi
 
-            }else {
-              //normal capture select side
-              let leftKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.LEFT))
-              leftKichwa.highlighBlink(2,cc.Color.YELLOW);
-              let rightKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.RIGHT))
-              rightKichwa.highlighBlink(2,cc.Color.YELLOW);
+              }else {
+                //normal capture select side
+                let leftKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.LEFT))
+                leftKichwa.highlighBlink(2,cc.Color.YELLOW);
+                let rightKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.RIGHT))
+                rightKichwa.highlighBlink(2,cc.Color.YELLOW);
             }
 
           }else {
@@ -138,8 +140,6 @@ cc.Class({
           board.showArrows(hole,side);
           this.activeKichwa=hole;
           reward++;
-
-
           //console.log("kichwa hole ",x);
         }
 
@@ -165,7 +165,7 @@ cc.Class({
       let hole=board.getActiveHole();
       let holeNode=board.getHoleComponent(hole);
       let reward=0;
-
+      //debugger
       if (this.action===ACTIONS.SOW&&this.stage===STAGE.NAMUA) {
 
         let direction=board.getDirection();
@@ -501,10 +501,11 @@ cc.Class({
           reward=this.handleHole(hole)
 
               if(reward>0){
-                //debugger
-              //reward=reward+this.handleMove()
+                this.activeKichwa=this.getKichwa(direction);
+              reward=reward+this.handleMove();
+
               }
-           cc.log(action,pos,reward);
+          cc.log(action,pos,reward);
           this.brain.backward(reward);
          }
       while (reward<1)
