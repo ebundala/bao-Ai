@@ -107,6 +107,9 @@ cc.Class({
        }
         return this;
     },
+    reset(){
+      this.removeKete(this.value);
+    },
     setHoleName(name){
       this.bName=name;
       return this;

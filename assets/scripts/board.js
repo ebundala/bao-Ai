@@ -151,6 +151,13 @@ cc.Class({
     },
     initBaoBoardState(state=BOARD_STATE.NORMAL){
       // populate initial state of the board
+            for (let y = 0; y < 4; y++) {
+              for (let x = 0; x < 8; x++) {
+              this.getHole(x,y).reset();
+              }
+
+
+            }
 
             if(state===BOARD_STATE.NORMAL)
             {

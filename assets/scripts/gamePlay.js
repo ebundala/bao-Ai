@@ -29,7 +29,7 @@ opt.tdtrainer_options=tdtrainer_options;
 
 
 
-var deepqlearn=require("deepqlearn")
+const deepqlearn=require("deepqlearn")
 cc.Class({
     extends: cc.Component,
 
@@ -38,17 +38,32 @@ cc.Class({
         default:null,
         type:cc.Node
       },
-      turn:1,
+
       brain:{default:null,type:cc.Node},
+      turn:1,
       stage:STAGE.NAMUA,
       mode:MODES.NORMAL,
       isSideLimited:false,
       inHand:0,
       action:ACTIONS.PICK,
+      isAi:false,
+      aiSwitch:{
+        default:null,
+        type:cc.Node
+      },
+      aiSwitchString:{
+        default:null,
+        type:cc.Label
+      },
       activeKichwa:{
         default:null,
         type:cc.Node
       }
+    },
+    toggleAI(){
+      this.isAi=!this.isAi
+      //this.aiSwitch.titleText=(this.isAi?"AI on":"AI off");
+      this.aiSwitchString.string=(this.isAi?"AI on":"AI off");
     },
     getBoard(){
       return this.board.getComponent("board");
@@ -78,14 +93,57 @@ cc.Class({
       }
       return state;
     },
+    changeTurn(){
+      this.turn=this.turn==PLAYER.NORTH?PLAYER.SOUTH:PLAYER.NORTH;
 
+
+      if(this.turn===PLAYER.NORTH&&this.isAi){
+
+        this.scheduleOnce(()=>{
+        let state=this.getBoardState();
+        let board=this.getBoard();
+        let reward=0
+        let actionDirection;
+        let action;
+        let pos;
+        let hole;
+        let direction;
+        do {
+          actionDirection=this.brain.forward(state);
+          //debugger;
+          action=actionDirection>32?actionDirection-32:actionDirection;
+          direction =actionDirection>32?DIRECTION.RIGHT:DIRECTION.LEFT;
+          pos=this.computeHolePosition(action);
+
+          hole =board.getRawHole(pos.x,pos.y);
+
+          reward=this.handleHole(hole)
+
+              if(reward>0){
+
+                board.setDirection(direction);
+                this.activeKichwa=this.getKichwa(direction);
+              reward=reward+this.handleMove();
+              cc.log(action,direction,pos,reward);
+
+              }
+
+          this.brain.backward(reward);
+         }
+         while (reward<1)
+       },1)
+      }
+
+    },
     handleHole(hole){
       let board=this.getBoard();
       let canCaptureList=this.getCanCaptureList();
       let reward=0;
+      let playable=this.isHolePlayable(hole)&&this.action===ACTIONS.PICK&&(this.canCapture(hole).state||(canCaptureList.length===0))
+
       if(this.stage===STAGE.NAMUA){
         //namua stage logic here
-        if(this.isHolePlayable(hole)&&this.isFrontRow(hole)&&this.action===ACTIONS.PICK&&(this.canCapture(hole).state||(canCaptureList.length===0))){
+        if(playable&&this.isFrontRow(hole)){
               this.limitSide(false);
           board.removeActiveHole();
           //debugger
@@ -143,7 +201,7 @@ cc.Class({
           //console.log("kichwa hole ",x);
         }
 
-        else {
+        else  {
           board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
           reward--;
           //console.log("illegal hole")
@@ -153,8 +211,23 @@ cc.Class({
 
 
      }
-     else {
-       //mtaji logic here
+     if(this.stage===STAGE.MTAJI) {
+        //mtaji logic here
+       if(playable){
+         board.removeActiveHole();
+         //debugger
+         board.setActiveHole(hole);
+         //board.addKete(hole,this.pickOneFromStore());
+         reward++;
+
+         cc.log("mtaji playable")
+       }
+       else {
+         board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
+         reward--;
+         cc.log("mtaji not playable")
+       }
+
      }
 
      return reward;
@@ -197,25 +270,40 @@ cc.Class({
         }else {
           ///  sow normal
           let kichwa=this.activeKichwa;
+
           if (this.isSideLimited) {
             let x=board.getHoleX(hole)
             let side=x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
             kichwa=this.getKichwa(side);
           }
+          //TODO resolve direction issues on AI
+          if (this.turn===PLAYER.NORTH&&this.isAi) {
+            direction=direction===DIRECTION.RIGHT?DIRECTION.LEFT:DIRECTION.RIGHT;
+            cc.log("Bot direction changed ",direction)
+          }
           let currentHole=kichwa;
+          //let pos=board.getHolePos(kichwa);
+          //direction=pos.x>1?DIRECTION.RIGHT:DIRECTION.LEFT;
           do {
             //  debugger;
             currentHole=this.sow(this.inHand,currentHole,direction,this.turn,false,true);
 
             this.clearInHand();
-            console.log("hole val n",board.getHoleValue(currentHole));
+            cc.log("hole val n ",board.getHoleValue(currentHole));
             if(this.canCapture(currentHole)){
 
               reward+= this.capture(currentHole);
-             //TODO handle capturing for ai
-              break;
+
+             if(this.turn===PLAYER.NORTH&&this.isAi){
+                //TODO handle capturing for ai
+
+             }else {
+               //break so a user can choose a kichwa
+               break;
+             }
+
             }else {
-              console.log("set in hand n");
+
               this.setInHand(board.getHoleValue(currentHole))
             }
 
@@ -224,16 +312,25 @@ cc.Class({
           //this.sow(this.inHand,kichwa,direction,this.turn,false,true);
 
         }
-
-
         this.setMode(MODES.NORMAL);
         this.setAction(ACTIONS.PICK)
+        this.checkStage();
         this.changeTurn();
-
-
        return reward;
       }
+      else if(this.action===ACTIONS.SOW&&this.stage===STAGE.MTAJI) {
+        cc.log("mtaji stage reached")
+        this.getBoard().initBaoBoardState();
+      }
 
+    },
+    checkStage(){
+      this.stage=this.isMtaji()?STAGE.MTAJI:STAGE.NAMUA;
+      cc.log("stage "+this.stage)
+      return this.stage;
+    },
+    isMtaji(){
+      return !(this.getStore(PLAYER.NORTH).value||this.getStore(PLAYER.SOUTH).value);
     },
     // use this for initialization
     onLoad: function () {
@@ -477,42 +574,7 @@ cc.Class({
       let pos=board.getHolePos(hole);
       return (pos.x===4&&pos.y===1)||(pos.x===3||pos.y===2);
     },
-    changeTurn(){
-      this.turn=this.turn==PLAYER.NORTH?PLAYER.SOUTH:PLAYER.NORTH;
 
-      if(this.turn===PLAYER.NORTH){
-        let state=this.getBoardState();
-        let board=this.getBoard();
-        let reward=0
-        let actionDirection;
-        let action;
-        let pos;
-        let hole;
-        let direction;
-        do {
-          actionDirection=this.brain.forward(state);
-          //debugger;
-          action=actionDirection>32?actionDirection-32:actionDirection;
-          direction =actionDirection>32?DIRECTION.RIGHT:DIRECTION.LEFT;
-          pos=this.computeHolePosition(action);
-
-          hole =board.getRawHole(pos.x,pos.y);
-          board.setDirection(direction);
-          reward=this.handleHole(hole)
-
-              if(reward>0){
-                this.activeKichwa=this.getKichwa(direction);
-              reward=reward+this.handleMove();
-
-              }
-          cc.log(action,pos,reward);
-          this.brain.backward(reward);
-         }
-      while (reward<1)
-
-
-      }
-    },
     isHolePlayable(hole,turn=this.turn,stage=this.stage){
       let y= this.getBoard().getHoleY(hole);
       let owner=y>1?PLAYER.NORTH:PLAYER.SOUTH;
@@ -572,9 +634,8 @@ cc.Class({
       let left=(vLeft>0)&&(vLeft0>0)?DIRECTION.LEFT:0;
       let right=(vRight>0)&&(vRightO>0)?DIRECTION.RIGHT:0;
       let state=left||right;
-      }
-
       return {state,left,right};
+      }
     },
     getCanCaptureList(player=this.turn){
       let y=0,x=0,holeslist=[];
@@ -613,7 +674,7 @@ cc.Class({
           }
         }
       }
-      console.log(holeslist);
+      //console.log(holeslist);
       return holeslist;
     },
     setCanCaptureList(holeslist){
@@ -728,7 +789,7 @@ cc.Class({
       let hole=this.getBoard().getActiveHole();
       let pos=hole?this.getBoard().getHolePos(hole):{x:0,y:0};
       let turn=this.turn>1?"Oppo":"Your\'s"
-      this.getBoard().setDisplayInfo("Turn:"+turn+" Hole: "+pos.x+","+pos.y+" Inhand: "+this.inHand)
+      this.getBoard().setDisplayInfo("Turn:"+turn+" Hole: "+pos.x+","+pos.y+" hand: "+this.inHand+" stage: "+this.stage)
      },
 
 });
