@@ -101,7 +101,10 @@ cc.Class({
     },
     removeKete(i){
       for (var j = 0; j < i; j++) {
-      this.keteList.pop().removeFromParent(true);
+      let hole=this.keteList.pop()
+      if(typeof hole != undefined){
+        hole.removeFromParent(true);
+      }
       this.value--;
 
        }

@@ -40,6 +40,7 @@ cc.Class({
       },
 
       brain:{default:null,type:cc.Node},
+      hasNyumba:{default:null,type:cc.Node},
       turn:1,
       stage:STAGE.NAMUA,
       mode:MODES.NORMAL,
@@ -75,7 +76,7 @@ cc.Class({
       let x=action>7?Math.floor(action%8):action;
 
      return cc.v2(x,y);
-   },
+     },
     getBoardState(){
       let board=this.getBoard();
 
@@ -94,6 +95,7 @@ cc.Class({
       return state;
     },
     changeTurn(){
+
       this.turn=this.turn==PLAYER.NORTH?PLAYER.SOUTH:PLAYER.NORTH;
 
 
@@ -131,7 +133,10 @@ cc.Class({
           this.brain.backward(reward);
          }
          while (reward<1)
+        //this.taxNyumba();
        },1)
+
+
       }
 
     },
@@ -144,7 +149,7 @@ cc.Class({
       if(this.stage===STAGE.NAMUA){
         //namua stage logic here
         if(playable&&this.isFrontRow(hole)){
-              this.limitSide(false);
+        this.limitSide(false);
           board.removeActiveHole();
           //debugger
           board.setActiveHole(hole);
@@ -164,6 +169,7 @@ cc.Class({
               this.setArrows(kichwa);
               board.showArrows(kichwa,side);
               //TODO handle ai capture on kimbi
+              cc.log("side limited");
 
               }else {
                 //normal capture select side
@@ -334,7 +340,7 @@ cc.Class({
     },
     // use this for initialization
     onLoad: function () {
-
+      this.hasNyumba={north:true,south:true};
       this.brain=new deepqlearn.Brain(DEEPQ.INPUTS,DEEPQ.ACTIONS,opt),
       //  cc.log(this.brain);
       //  cc.director.getCollitionsManager().enabled = true;
@@ -523,17 +529,23 @@ cc.Class({
       this.setInHand(oValue);
       return oValue;
     },
-    getNyumba(player=this.turn){
+    getNyumba(raw=false,player=this.turn){
         let board=this.getBoard();
+        let hole;
 
       if(player===PLAYER.SOUTH){
-
-          return board.getHole(4,1)
+        if(raw){
+          return board.getRawHole(4,1);
+        }
+          return board.getHole(4,1);
 
 
       }
       else {
 
+         if(raw){
+           return board.getRawHole(3,2)
+         }
           return board.getHole(3,2)
 
       }
@@ -572,7 +584,7 @@ cc.Class({
     isNyumba(hole){
       let board=this.getBoard();
       let pos=board.getHolePos(hole);
-      return (pos.x===4&&pos.y===1)||(pos.x===3||pos.y===2);
+      return (pos.x===4&&pos.y===1)||(pos.x===3&&pos.y===2);
     },
 
     isHolePlayable(hole,turn=this.turn,stage=this.stage){
@@ -711,6 +723,102 @@ cc.Class({
           }
           //console.log(pos);
           return pos;
+    },
+    getNyumbaValue(){
+
+      return this.getNyumba().value;
+    },
+    canTakasaNyumba(){
+
+      return this.getNyumbaValue()<6;
+     },
+    isNyumbaOnlyAvailable(){
+      let house=false;
+      let board=this.getBoard();
+      for (var i = 0; i < 8; i++) {
+        let hole=board.getRawHole(i,this.turn);
+        let val=board.getHoleValue(hole);
+        if(val>0&&!this.isNyumba(hole)){
+         house=false;
+         break;
+        }
+        else if(val>0&&this.isNyumba(hole)){
+
+          house=true
+
+        }
+
+      }
+      //cc.log("only house ",house);
+      return house;
+    },
+    taxNyumba(){
+       //let hole=;
+     //  let board =this.getBoard();
+      return this.getNyumba().removeKete(2);
+    },
+    isTakasaAllowed(hole){
+      let board=this.getBoard();
+      if(){
+
+ 
+    },
+    playerLostNyumba(player=this.turn){
+      if(player===PLAYER.SOUTH){
+        this.hasNyumba.south=false;
+      }
+      else if(player===PLAYER.NORTH) {
+        this.hasNyumba.north=false;
+      }
+    },
+    playerHasNyumba(player=this.turn){
+      if(player===PLAYER.SOUTH){
+        return this.hasNyumba.south;
+      }
+      else if(player===PLAYER.NORTH) {
+        return this.hasNyumba.north;
+      }
+    },
+    getHolesWithMoreThan_1_kete(player=this.turn){
+      let y=0,x=0,holeslist=[];
+      let board=this.getBoard()
+
+      if(player===PLAYER.SOUTH){
+        for(y=0;y<2;y++){
+          for(x=0;x<8;x++){
+            //find all holes that can be captured by  south player;
+
+            let hole=board.getHole(x,y);
+           if(this.isHolePlayable(hole))
+           {
+            let kete=board.getHoleValue(hole);
+            if (kete>1)
+            {
+              holeslist.push(hole);
+            }
+          }
+          }
+        }
+
+      }
+      else{
+        for(y=2;y<4;y++){
+          for(x=0;x<8;x++){
+            //find all holes that can be captured by  north player;
+            let hole=board.getHole(x,y);
+            if(this.isHolePlayable(hole))
+          {
+            let kete=board.getHoleValue(hole);
+            if (kete>1)
+            {
+              holeslist.push(hole);
+            }
+          }
+          }
+        }
+      }
+      //console.log(holeslist);
+      return holeslist;
     },
      //sow function overide
     sow(kete,startHole,direction,player=this.turn,test=false,inplace=false){
