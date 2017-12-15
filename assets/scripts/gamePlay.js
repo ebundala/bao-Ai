@@ -143,8 +143,9 @@ cc.Class({
     handleHole(hole){
       let board=this.getBoard();
       let canCaptureList=this.getCanCaptureList();
+      let canCapture=this.canCapture(hole);
       let reward=0;
-      let playable=this.isHolePlayable(hole)&&this.action===ACTIONS.PICK&&(this.canCapture(hole).state||(canCaptureList.length===0))
+      let playable=this.isHolePlayable(hole)&&this.action===ACTIONS.PICK&&(canCapture.state||(canCaptureList.length===0))
 
       if(this.stage===STAGE.NAMUA){
         //namua stage logic here
@@ -155,7 +156,7 @@ cc.Class({
           board.setActiveHole(hole);
           board.addKete(hole,this.pickOneFromStore());
           reward++;
-          if(this.canCapture(hole).state)
+          if(canCapture.state)
           {
 
           this.setMode(MODES.NORMAL);
@@ -181,6 +182,11 @@ cc.Class({
 
           }else {
             //Takasa mode logic
+            if (this.isTakasaAllowed(hole,this.turn)) {
+              cc.log("Takasa allowed")
+            }else{
+              cc.log("Takasa not allowed")
+            }
             let val=board.getHoleValue(hole);
             board.removeKete(hole,val);
             this.setInHand(val);
@@ -590,10 +596,14 @@ cc.Class({
     isHolePlayable(hole,turn=this.turn,stage=this.stage){
       let y= this.getBoard().getHoleY(hole);
       let owner=y>1?PLAYER.NORTH:PLAYER.SOUTH;
+      let kete=this.getBoard().getHoleValue(hole);
       if(stage===STAGE.NAMUA){
-        return this.getBoard().getHoleValue(hole)>0&&turn===owner;
+        return kete>0&&turn===owner;
       }
-      return this.getBoard().getHoleValue(hole)>1&&turn===owner;
+      else {
+        return kete>1&&kete<16&&turn===owner;
+      }
+
     },
     canCapture(hole=this.getBoard().getActiveHole(),stage=this.stage){
 
@@ -757,11 +767,27 @@ cc.Class({
      //  let board =this.getBoard();
       return this.getNyumba().removeKete(2);
     },
-    isTakasaAllowed(hole){
+    isTakasaAllowed(hole,player=this.turn){
       let board=this.getBoard();
-      if(){
 
- 
+      let canCapture=this.canCapture(hole);
+      let kete=board.getHoleValue(hole);
+      let allowedHoles=this.getHolesWithMoreThan_1_kete(player).length;
+
+      if ((!canCapture.state))
+      {
+        if(kete>1){
+          return true;
+        }
+       else if(((kete===1)&&(allowedHoles===0)||this.playerHasNyumba(player))&&this.stage===STAGE.NAMUA)
+        {
+         return true;
+        }
+        else {
+          return false;
+        }
+      }
+
     },
     playerLostNyumba(player=this.turn){
       if(player===PLAYER.SOUTH){
@@ -901,6 +927,10 @@ cc.Class({
      },
 
 });
+
+
+
+
 
 
 //   //first hole first row
