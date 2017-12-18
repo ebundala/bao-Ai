@@ -146,7 +146,7 @@ cc.Class({
       let canCapture=this.canCapture(hole);
       let reward=0;
       let playable=this.isHolePlayable(hole)&&this.action===ACTIONS.PICK&&(canCapture.state||(canCaptureList.length===0))
-
+      let takasaAllowed=this.isTakasaAllowed(hole,this.turn)
       if(this.stage===STAGE.NAMUA){
         //namua stage logic here
         if(playable&&this.isFrontRow(hole)){
@@ -154,13 +154,16 @@ cc.Class({
           board.removeActiveHole();
           //debugger
           board.setActiveHole(hole);
-          board.addKete(hole,this.pickOneFromStore());
-          reward++;
+
+
+
+
           if(canCapture.state)
           {
-
+            board.addKete(hole,this.pickOneFromStore());
+            reward++;
           this.setMode(MODES.NORMAL);
-          reward=reward+this.capture();
+          reward+=this.capture();
             if(this.isKimbi(hole)||this.isKichwa(hole)){
               //handle capture on kimbi/kichwa
               this.limitSide(true);
@@ -179,14 +182,13 @@ cc.Class({
                 let rightKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.RIGHT))
                 rightKichwa.highlighBlink(2,cc.Color.YELLOW);
             }
-
+           this.setAction(ACTIONS.SOW)
           }else {
             //Takasa mode logic
-            if (this.isTakasaAllowed(hole,this.turn)) {
-              cc.log("Takasa allowed")
-            }else{
-              cc.log("Takasa not allowed")
-            }
+            if(takasaAllowed){
+              board.addKete(hole,this.pickOneFromStore());
+              reward++;
+
             let val=board.getHoleValue(hole);
             board.removeKete(hole,val);
             this.setInHand(val);
@@ -196,8 +198,15 @@ cc.Class({
             this.setArrows(hole);
             let arrows=this.isKichwa(hole)?side:DIRECTION.HORIZONTAL;
             board.showArrows(hole,arrows);
+            this.setAction(ACTIONS.SOW)
+          }else  {
+            board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
+            reward--;
+            //console.log("illegal hole")
           }
-          this.setAction(ACTIONS.SOW)
+          }
+
+
 
 
 
@@ -346,7 +355,7 @@ cc.Class({
     },
     // use this for initialization
     onLoad: function () {
-      this.hasNyumba={north:true,south:true};
+      this.hasNyumba={north:false,south:false};
       this.brain=new deepqlearn.Brain(DEEPQ.INPUTS,DEEPQ.ACTIONS,opt),
       //  cc.log(this.brain);
       //  cc.director.getCollitionsManager().enabled = true;
@@ -773,7 +782,7 @@ cc.Class({
       let canCapture=this.canCapture(hole);
       let kete=board.getHoleValue(hole);
       let allowedHoles=this.getHolesWithMoreThan_1_kete(player).length;
-
+     //debugger;
       if ((!canCapture.state))
       {
         if(kete>1){
@@ -786,6 +795,9 @@ cc.Class({
         else {
           return false;
         }
+      }
+      else {
+        return false;
       }
 
     },
