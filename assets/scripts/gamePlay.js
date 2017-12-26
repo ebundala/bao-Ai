@@ -2,7 +2,7 @@
 const PLAYER={NORTH:2,SOUTH:1}
 const STAGE={NAMUA:1,MTAJI:2}
 const MODES={NORMAL:1,TAKASA:2}
-const ACTIONS={PICK:1,SOW:2,SLEEP:3,CAPTURE:4,TAKASA:5}
+const ACTIONS={PICK:1,SOW:2,SLEEP:3,CAPTURE:4,TAKASA:5,TAX:6}
 const DIRECTION={LEFT:1,RIGHT:2,UP:3,DOWN:4,HORIZONTAL:5,VERTICAL:6,DOWN_LEFT:7,DOWN_RIGHT:8,UP_LEFT:9,UP_RIGHT:10}
 const BOARD_STATE={NORMAL:1,TAKASA:2,CAPTURING:3}
 //neural net parameters
@@ -150,7 +150,7 @@ cc.Class({
       if(this.stage===STAGE.NAMUA){
         //namua stage logic here
         if(playable&&this.isFrontRow(hole)){
-        this.limitSide(false);
+          this.limitSide(false);
           board.removeActiveHole();
           //debugger
           board.setActiveHole(hole);
@@ -162,8 +162,8 @@ cc.Class({
           {
             board.addKete(hole,this.pickOneFromStore());
             reward++;
-          this.setMode(MODES.NORMAL);
-          reward+=this.capture();
+            this.setMode(MODES.NORMAL);
+            reward+=this.capture();
             if(this.isKimbi(hole)||this.isKichwa(hole)){
               //handle capture on kimbi/kichwa
               this.limitSide(true);
@@ -181,25 +181,34 @@ cc.Class({
                 leftKichwa.highlighBlink(2,cc.Color.YELLOW);
                 let rightKichwa=board.getHoleComponent(this.getKichwa(DIRECTION.RIGHT))
                 rightKichwa.highlighBlink(2,cc.Color.YELLOW);
-            }
-           this.setAction(ACTIONS.SOW)
+              }
+             this.setAction(ACTIONS.SOW)
           }else {
             //Takasa mode logic
-            if(takasaAllowed){
+            if(takasaAllowed.state){
               board.addKete(hole,this.pickOneFromStore());
               reward++;
+              let val=0;
+              if(takasaAllowed.action===ACTIONS.TAX){
 
-            let val=board.getHoleValue(hole);
-            board.removeKete(hole,val);
-            this.setInHand(val);
-            this.setMode(MODES.TAKASA);
-            let x=board.getHoleX(hole);
-            let side=x===7?DIRECTION.RIGHT:DIRECTION.LEFT;
-            this.setArrows(hole);
-            let arrows=this.isKichwa(hole)?side:DIRECTION.HORIZONTAL;
-            board.showArrows(hole,arrows);
-            this.setAction(ACTIONS.SOW)
-          }else  {
+                val=this.taxNyumba();
+
+              }
+              else{
+                val=board.getHoleValue(hole);
+                board.removeKete(hole,val);
+              }
+              this.setInHand(val);
+              this.setMode(MODES.TAKASA);
+              let x=board.getHoleX(hole);
+              let side=x===7?DIRECTION.RIGHT:DIRECTION.LEFT;
+              this.setArrows(hole);
+              let arrows=this.isKichwa(hole)?side:DIRECTION.HORIZONTAL;
+              board.showArrows(hole,arrows);
+              this.setAction(ACTIONS.SOW)
+          }
+          else
+          {
             board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
             reward--;
             //console.log("illegal hole")
@@ -212,7 +221,8 @@ cc.Class({
 
         }
         else if (this.isKichwa(hole)&&this.action===ACTIONS.SOW&&this.isSideLimited===false&&
-        this.mode===MODES.NORMAL&&this.isFrontRow(hole)&&this.isMyHole(hole)&&this.inHand>0){
+        this.mode===MODES.NORMAL&&this.isFrontRow(hole)&&this.isMyHole(hole)&&this.inHand>0)
+        {
           let x=board.getHoleX(hole);
           let side=x===7?DIRECTION.RIGHT:DIRECTION.LEFT;
           this.setArrows(hole);
@@ -227,12 +237,8 @@ cc.Class({
           reward--;
           //console.log("illegal hole")
         }
-
-
-
-
-     }
-     if(this.stage===STAGE.MTAJI) {
+      }
+      if(this.stage===STAGE.MTAJI) {
         //mtaji logic here
        if(playable){
          board.removeActiveHole();
@@ -243,13 +249,14 @@ cc.Class({
 
          cc.log("mtaji playable")
        }
-       else {
-         board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
-         reward--;
-         cc.log("mtaji not playable")
-       }
+       else
+       {
+           board.getHoleComponent(hole).highlighBlink(0.5,cc.Color.RED);
+           reward--;
+           cc.log("mtaji not playable")
+        }
 
-     }
+      }
 
      return reward;
     },
@@ -355,7 +362,7 @@ cc.Class({
     },
     // use this for initialization
     onLoad: function () {
-      this.hasNyumba={north:false,south:false};
+      this.hasNyumba={north:true,south:true};
       this.brain=new deepqlearn.Brain(DEEPQ.INPUTS,DEEPQ.ACTIONS,opt),
       //  cc.log(this.brain);
       //  cc.director.getCollitionsManager().enabled = true;
@@ -537,11 +544,16 @@ cc.Class({
     capture(hole=this.getBoard().getActiveHole()){
       let board=this.getBoard();
       let pos=board.getHolePos(hole)
+
       let oppositeHolePos=this.getOppositeHolePos(pos)
       let oHole=board.getHole(oppositeHolePos.x,oppositeHolePos.y);
       let oValue=board.getHoleValue(oHole);
+      let canCapture=board.getHoleValue(hole)>1&&oValue;
+      if (canCapture) {
       board.removeKete(oHole,oValue);
       this.setInHand(oValue);
+      }
+
       return oValue;
     },
     getNyumba(raw=false,player=this.turn){
@@ -774,7 +786,10 @@ cc.Class({
     taxNyumba(){
        //let hole=;
      //  let board =this.getBoard();
-      return this.getNyumba().removeKete(2);
+     let nyumba=this.getNyumba()
+     let val=nyumba.value;
+     nyumba.removeKete(2);
+      return val==(nyumba.value+2)?2:0;
     },
     isTakasaAllowed(hole,player=this.turn){
       let board=this.getBoard();
@@ -782,15 +797,24 @@ cc.Class({
       let canCapture=this.canCapture(hole);
       let kete=board.getHoleValue(hole);
       let allowedHoles=this.getHolesWithMoreThan_1_kete(player).length;
+      let hasNyumba=this.playerHasNyumba(player);
+      let isNyumba=this.isNyumba(hole);
      //debugger;
       if ((!canCapture.state))
       {
-        if(kete>1){
-          return true;
+
+        if(kete>1&&!(isNyumba&&hasNyumba&&!this.canTakasaNyumba()&&this.stage===STAGE.NAMUA)){
+          return {state:true,action:ACTIONS.TAKASA}
         }
-       else if(((kete===1)&&(allowedHoles===0)||this.playerHasNyumba(player))&&this.stage===STAGE.NAMUA)
+        else if(((kete===1)&&(allowedHoles===0)||hasNyumba)&&!(isNyumba&&hasNyumba)&&this.stage===STAGE.NAMUA)
         {
-         return true;
+         return {state:true,action:ACTIONS.TAKASA};
+        }
+        else if (isNyumba&&hasNyumba&&this.isNyumbaOnlyAvailable())
+        {
+          //cc.log("only nyumba play taxation");
+
+          return {state:true,action:ACTIONS.TAX};
         }
         else {
           return false;
@@ -858,6 +882,7 @@ cc.Class({
       //console.log(holeslist);
       return holeslist;
     },
+
      //sow function overide
     sow(kete,startHole,direction,player=this.turn,test=false,inplace=false){
        let board=this.getBoard();
