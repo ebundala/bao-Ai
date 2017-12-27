@@ -168,8 +168,10 @@ cc.Class({
               this.getHole(6,1).addKete(2);
               //nyumba holes
               this.getHole(4,1).addKete(6);
+            //  this.getHole(4,2).addKete(1);//test for capturing nyumba
               this.getHole(4,1).setHoleName("south-nyumba");
               this.getHole(3,2).addKete(6);
+            //  this.getHole(3,1).addKete(1);//test for capturing nyumba
               this.getHole(3,2).setHoleName("north-nyumba");
 
               //stores holes;

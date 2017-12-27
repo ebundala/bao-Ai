@@ -195,6 +195,13 @@ cc.Class({
 
               }
               else{
+                //lose nyumba logic
+                //nyumba emptied logic
+                
+                if(this.isNyumba(hole)&&this.playerHasNyumba(this.turn)){
+                  this.playerLostNyumba(this.turn);
+                  cc.log("Nyumba lost by empting ",this.hasNyumba)
+                }
                 val=board.getHoleValue(hole);
                 board.removeKete(hole,val);
               }
@@ -550,11 +557,20 @@ cc.Class({
       let oValue=board.getHoleValue(oHole);
       let canCapture=board.getHoleValue(hole)>1&&oValue;
       if (canCapture) {
+        //nyumba captured logic
+        let opponent=this.getOpponent(this.turn);
+        if(this.isNyumba(oHole)&&this.playerHasNyumba(opponent)){
+          this.playerLostNyumba(opponent);
+          cc.log("Nyumba lost by capture ",this.hasNyumba)
+        }
       board.removeKete(oHole,oValue);
       this.setInHand(oValue);
       }
 
       return oValue;
+    },
+    getOpponent(player=this.turn){
+      return player===PLAYER.SOUTH?PLAYER.NORTH:PLAYER.SOUTH;
     },
     getNyumba(raw=false,player=this.turn){
         let board=this.getBoard();
@@ -825,7 +841,7 @@ cc.Class({
       }
 
     },
-    playerLostNyumba(player=this.turn){
+    playerLostNyumba(player=this.getOpponent()){
       if(player===PLAYER.SOUTH){
         this.hasNyumba.south=false;
       }

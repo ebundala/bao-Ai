@@ -361,6 +361,7 @@
       "__id__": 4
     },
     "brain": null,
+    "hasNyumba": null,
     "turn": 1,
     "stage": 1,
     "mode": 1,
