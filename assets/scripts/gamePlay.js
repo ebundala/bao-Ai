@@ -2,7 +2,7 @@
 const PLAYER={NORTH:2,SOUTH:1}
 const STAGE={NAMUA:1,MTAJI:2}
 const MODES={NORMAL:1,TAKASA:2}
-const ACTIONS={PICK:1,SOW:2,SLEEP:3,CAPTURE:4,TAKASA:5,TAX:6}
+const ACTIONS={PICK:1,SOW:2,SLEEP:3,CAPTURE:4,TAKASA:5,TAX:6,KICHWAONLY:7}
 const DIRECTION={LEFT:1,RIGHT:2,UP:3,DOWN:4,HORIZONTAL:5,VERTICAL:6,DOWN_LEFT:7,DOWN_RIGHT:8,UP_LEFT:9,UP_RIGHT:10}
 const BOARD_STATE={NORMAL:1,TAKASA:2,CAPTURING:3}
 //neural net parameters
@@ -189,6 +189,7 @@ cc.Class({
               board.addKete(hole,this.pickOneFromStore());
               reward++;
               let val=0;
+              //TODO move state change code to handle move for better AI performance
               if(takasaAllowed.action===ACTIONS.TAX){
 
                 val=this.taxNyumba();
@@ -197,10 +198,9 @@ cc.Class({
               else{
                 //lose nyumba logic
                 //nyumba emptied logic
-                
                 if(this.isNyumba(hole)&&this.playerHasNyumba(this.turn)){
                   this.playerLostNyumba(this.turn);
-                  cc.log("Nyumba lost by empting ",this.hasNyumba)
+                  cc.log("Nyumba lost by emptying ",this.hasNyumba)
                 }
                 val=board.getHoleValue(hole);
                 board.removeKete(hole,val);
@@ -212,6 +212,9 @@ cc.Class({
               this.setArrows(hole);
               let arrows=this.isKichwa(hole)?side:DIRECTION.HORIZONTAL;
               board.showArrows(hole,arrows);
+              if(takasaAllowed.action===ACTIONS.KICHWAONLY){
+                this.limitSide(true);
+              }
               this.setAction(ACTIONS.SOW)
           }
           else
@@ -283,8 +286,16 @@ cc.Class({
 
         if (this.mode===MODES.TAKASA) {
           //sow TAKASA
+
+          //debugger;
+          //handle only kichwa has kete prevent moving to outer row
+          if(this.isSideLimited){
+            let x=board.getHoleX(hole);
+            direction=x===7?DIRECTION.LEFT:DIRECTION.RIGHT;
+
+          }
+          this.limitSide(false);
           let currentHole=hole;
-          // debugger;
           do {
 
             currentHole=this.sow(this.inHand,currentHole,direction,this.turn);
@@ -629,7 +640,6 @@ cc.Class({
       let pos=board.getHolePos(hole);
       return (pos.x===4&&pos.y===1)||(pos.x===3&&pos.y===2);
     },
-
     isHolePlayable(hole,turn=this.turn,stage=this.stage){
       let y= this.getBoard().getHoleY(hole);
       let owner=y>1?PLAYER.NORTH:PLAYER.SOUTH;
@@ -771,25 +781,26 @@ cc.Class({
           //console.log(pos);
           return pos;
     },
-    getNyumbaValue(){
+    getNyumbaValue(player=this.turn){
 
-      return this.getNyumba().value;
+      return this.getNyumba(false,player).value;
     },
-    canTakasaNyumba(){
+    canTakasaNyumba(player=this.turn){
 
-      return this.getNyumbaValue()<6;
+      return this.getNyumbaValue(player)<6;
      },
-    isNyumbaOnlyAvailable(){
+    isNyumbaOnlyAvailable(player=this.turn){
       let house=false;
       let board=this.getBoard();
       for (var i = 0; i < 8; i++) {
-        let hole=board.getRawHole(i,this.turn);
+        let hole=board.getRawHole(i,player);
         let val=board.getHoleValue(hole);
-        if(val>0&&!this.isNyumba(hole)){
+        let isNyumba=this.isNyumba(hole)
+        if(val>0&&!isNyumba){
          house=false;
          break;
         }
-        else if(val>0&&this.isNyumba(hole)){
+        else if(val>0&&isNyumba){
 
           house=true
 
@@ -798,6 +809,28 @@ cc.Class({
       }
       //cc.log("only house ",house);
       return house;
+    },
+    isKichwaOnlyAvailable(player=this.turn){
+      let kichwa=false;
+      let board=this.getBoard();
+      for (var i = 0; i < 8; i++) {
+        let hole=board.getRawHole(i,player);
+        let val=board.getHoleValue(hole);
+        let isKichwa=this.isKichwa(hole);
+
+        if(val>0&&!isKichwa){
+         kichwa=false;
+         break;
+        }
+        else if(val>0&&isKichwa){
+
+          kichwa=kichwa===false?true:false;
+
+        }
+
+      }
+      //cc.log("only house ",house);
+      return kichwa;
     },
     taxNyumba(){
        //let hole=;
@@ -815,21 +848,26 @@ cc.Class({
       let allowedHoles=this.getHolesWithMoreThan_1_kete(player).length;
       let hasNyumba=this.playerHasNyumba(player);
       let isNyumba=this.isNyumba(hole);
+      let isKichwaOnlyAvailable=this.isKichwaOnlyAvailable(player);
+
      //debugger;
       if ((!canCapture.state))
       {
 
-        if(kete>1&&!(isNyumba&&hasNyumba&&!this.canTakasaNyumba()&&this.stage===STAGE.NAMUA)){
+        if(kete>1&&!(isNyumba&&hasNyumba&&!this.canTakasaNyumba(player)&&this.stage===STAGE.NAMUA)&&!isKichwaOnlyAvailable){
           return {state:true,action:ACTIONS.TAKASA}
         }
-        else if(((kete===1)&&(allowedHoles===0)||hasNyumba)&&!(isNyumba&&hasNyumba)&&this.stage===STAGE.NAMUA)
+        else if(((kete===1)&&(allowedHoles===0)||hasNyumba)&&!(isNyumba&&hasNyumba)&&this.stage===STAGE.NAMUA&&!isKichwaOnlyAvailable)
         {
          return {state:true,action:ACTIONS.TAKASA};
         }
-        else if (isNyumba&&hasNyumba&&this.isNyumbaOnlyAvailable())
+        else if (kete>1&&isKichwaOnlyAvailable) {
+          cc.log("only kichwa limit side");
+          return {state:true,action:ACTIONS.KICHWAONLY};
+        }
+        else if (isNyumba&&hasNyumba&&this.isNyumbaOnlyAvailable(player))
         {
           //cc.log("only nyumba play taxation");
-
           return {state:true,action:ACTIONS.TAX};
         }
         else {
